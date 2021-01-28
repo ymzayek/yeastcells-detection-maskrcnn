@@ -34,7 +34,8 @@ setup(
         'numpy>=1.19.1',
         'scipy>=1.5.2',
         'Shapely>=1.7.0'
-        'tqdm>=4.48.2'
+        'tqdm>=4.48.2',
+        'lapjv>=1.3.1'
       ],
       extras_require={
         'dev': [],
