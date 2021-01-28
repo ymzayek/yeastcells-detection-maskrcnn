@@ -3,7 +3,7 @@ import numpy as np
 import copy
 from collections import Counter
 
-def get_seg_performance_mask(pred_s, gt_s, output, removed_fp = False, index=None):
+def get_seg_performance(pred_s, gt_s, output, removed_fp = False, index=None):
     pred = copy.deepcopy(pred_s)
     gt = copy.deepcopy(gt_s)
     masks = [
@@ -33,7 +33,7 @@ def get_seg_performance_mask(pred_s, gt_s, output, removed_fp = False, index=Non
         "tp": len(tp), "fp": len(fp), "join": len(join), "split": len(split)
     }
 
-def get_tracking_performance_mask(pred_t, gt_t, output, removed_fp = False, index=None):
+def get_track_performance(pred_t, gt_t, output, removed_fp = False, index=None):
     pred = copy.deepcopy(pred_t)
     gt = copy.deepcopy(gt_t)
     masks = [
@@ -81,12 +81,19 @@ def get_true_positives(pred_s, gt_s, output):
     masks = [m for i in output for m in np.array(
         i['instances'].pred_masks.to('cpu'), dtype=int
     )]
-    tp_label = np.zeros((len(pred)))
+    tp_labels = np.zeros((len(pred)))
     c1 = 0
     for pred_frame, mask in zip(pred[:,0], masks):
         for gt_frame, gt_x, gt_y in zip(gt[:,0], gt[:,2], gt[:,3]):
             if (pred_frame==gt_frame) & (mask[gt_y,gt_x]==1):
-                tp_label[c1]=1
+                tp_labels[c1]=1
         c1+=1    
     
-    return tp_label
+    return tp_labels
+
+def calculate_metrics(results, pred, gt):
+    precision = results["tp"]/len(pred)
+    recall = results["tp"]/len(gt)
+    F = 2 * ((precision*recall) / (precision + recall))
+    
+    return {'F1-score': F, 'Precision': precision, 'Recall': recall}

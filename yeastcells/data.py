@@ -45,7 +45,7 @@ def get_gt(seg_path, track_path):
     gt_s_df.columns = [n.replace(' ', '') for n in gt_s_df.columns] 
     gt_t_df.columns = [n.replace(' ', '') for n in gt_t_df.columns]
     gt_s_df = gt_s_df.drop(columns=['Cell_colour'])
-    gt_s = np.round(gt_s_df.to_np(copy=True)).astype(int)
+    gt_s = np.round(gt_s_df.to_numpy(copy=True)).astype(int)
     
     gt_t_df = gt_t_df.drop(columns=['Cell_number'])
     gt_t = gt_t_df.to_np(copy=True)
