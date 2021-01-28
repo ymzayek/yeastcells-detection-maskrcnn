@@ -10,7 +10,7 @@ def load_model(model_path, seg_thresh=0.94, device='cpu'):
     log_prefix = '../output'
     cfg = get_cfg()
     cfg.OUTPUT_DIR = f'{log_prefix}/' 
-    cfg.MODEL.WEIGHTS = f'{model_path}/model_final.pth'
+    cfg.MODEL.WEIGHTS = f'{model_path}'
     cfg.merge_from_file(model_zoo.get_config_file(
         "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")
     )

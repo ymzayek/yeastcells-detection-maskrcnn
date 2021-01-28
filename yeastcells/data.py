@@ -35,12 +35,12 @@ def read_images_cat(fns): #for reading multiple single-image tiffs and concatena
         (image / image.max() * 255)[:, ..., None] * [[[1, 1, 1]]]
     ).astype(np.uint8) 
 
-def get_gt(ts):# check #YM
+def get_gt(seg_path, track_path):
     gt_s_df=pd.read_csv(
-        f'./data/yit_toolkit/{ts}/GroundTruth/GroundTruth_Segmentation.csv'
+        f'{seg_path}'
     )
     gt_t_df=pd.read_csv(
-        f'./data/yit_toolkit/{ts}/GroundTruth/GroundTruth_Tracking.csv'
+        f'{track_path}'
     )
     gt_s_df.columns = [n.replace(' ', '') for n in gt_s_df.columns] 
     gt_t_df.columns = [n.replace(' ', '') for n in gt_t_df.columns]
