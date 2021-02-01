@@ -8,7 +8,7 @@ from .features import group
 
 def plot_paths(
         labels, coordinates, xlim=(0, 512), ylim=(0, 512), 
-        ax=None, style={},subset=None, title=None
+        ax=None, style={}, subset=None, title=None
     ):
     if ax is None:
         fig = plt.figure()
