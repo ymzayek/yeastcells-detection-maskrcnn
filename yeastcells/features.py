@@ -36,9 +36,11 @@ def get_centroids(coordinates, labels):
     
     return centroids
 
-def get_tracks(labels):
+def get_seg_track(labels):
+    segs = print('The number of segmentations is ' + str(len(labels)))
+    tracks = print('The number of tracked cells is ' + str(len(np.unique(labels[labels>=0]))))
     
-    return len(Counter(labels))-1
+    return segs, tracks
 
 def group(l, outputs):
     boundaries = np.cumsum([0] + [len(o['instances']) for o in outputs])

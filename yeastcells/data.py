@@ -48,7 +48,7 @@ def get_gt(seg_path, track_path):
     gt_s = np.round(gt_s_df.to_numpy(copy=True)).astype(int)
     
     gt_t_df = gt_t_df.drop(columns=['Cell_number'])
-    gt_t = gt_t_df.to_np(copy=True)
+    gt_t = gt_t_df.to_numpy(copy=True)
     gt_t = np.column_stack((gt_t,gt_s[:,2]))
     gt_t = np.column_stack((gt_t,gt_s[:,3]))
     
