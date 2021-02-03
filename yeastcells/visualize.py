@@ -90,7 +90,7 @@ def create_scene(
 
     return canvas
 
-def select_cell(coordinates, labels, w=40, l=0):
+def select_cell(scene, coordinates, labels, w=40, l=0):
     label = l
     z, y, x = coordinates[labels == label].T 
     xmin, xmax = int(max(0, x.mean() - w)), int(x.mean() + w)
@@ -122,10 +122,10 @@ def plot_area_profile(polygons, label=0, ax=None, title=None):
     if ax is None:
         fig = plt.figure()  
         fig.suptitle(title)
-        ax.add_subplot(111)
+        ax = fig.add_subplot(111)
         ax.set_xlabel('Time')
         ax.set_ylabel('Area')
         ax.plot(area)
         
-    return ax    
+    return ax  
     

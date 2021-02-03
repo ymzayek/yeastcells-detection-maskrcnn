@@ -4,15 +4,19 @@ Automatic segmentation and tracking of budding yeast cells in time-series bright
 
 # Participants
 
-* Dr. Andreas Milias Argeitis, principal investigator, University of Groningen, Faculty of Science and Engineering
-* MSc. Paolo Guerra, second principal investigator, University of Groningen, Faculty of Science and Engineering
+* Dr Andreas Milias Argeitis, principal investigator, University of Groningen, Faculty of Science and Engineering
+* MSc Paolo Guerra, second principal investigator, University of Groningen, Faculty of Science and Engineering
 * MSc Herbert Teun Kruitbosch, data scientist, University of Groningen, Data science team
-* Msc Yasmin Mzayek, IT trainee, University of Groningen, Data Science trainee
+* MSc Yasmin Mzayek, IT trainee, University of Groningen, Data Science trainee
 * MA Sara Omlor, IT trainee, University of Groningen, Data Science trainee
 
 # Project description
 
-* See https://github.com/prhbrt/yeast-cell-detection
+**Goals** 
+* To implement an automatic sgementation pipeline using a mask R-CNN trained on synthetic brightfield data and requires no finetuning. 
+* To track cells across time frames using DBSCAN clustering based on intersection-over-union
+
+See https://github.com/prhbrt/synthetic-yeast-cells for the synthetic training data toolkit used to train the mask R-CNN.
 
 # Implementation
 
@@ -20,7 +24,7 @@ See example [pipeline notebook](https://git.webhosting.rug.nl/P301081/yeastcells
 The example pipeline gives segmentation and tracking results of brightfield time-lapse yeast microscopy.
 
 **Segmentation** 
-* **Input** Brightfield 512x512 time-lapse images. The source file is a multi-image tiff. (For reading multiple single-image tiffs and concatenating them use data.read_image_cat function instead). The frame rate is 300 seconds. 
+* **Input** Brightfield 512x512 time-lapse images. The source file is a multi-image tiff. (For reading multiple single-image tiffs and concatenating them use `data.read_image_cat` function instead). The frame rate is 300 seconds. 
 
 <table>
   <tr>	
@@ -33,14 +37,24 @@ The example pipeline gives segmentation and tracking results of brightfield time
   </tr>
 </table>
 
----
-
 * **Output** The `output` variable provides a prediction box, prediction score, and a prediction mask for each instance segmentation in each frame. You can access the prediction masks by `np.array(output[<frame>]['instances'].pred_masks.to('cpu'))`.
+
+<table>
+  <tr>	
+    <td>
+        <img src="images/figures/movie1_image_detections.png"/>
+    </td>
+  </tr>
+    <tr>
+    <td>Figure 2. Detected yeast cells are highlighted by a purple border.</td>
+  </tr>
+</table>
 
 
 **Tracking**  
 * **Input** The tracking results are obtained by applying the `clustering.cluster_cells` function on the `output` which uses DBSCAN to cluster the detections into labels representing the same cell over time. You can set a maximum time-distance of `<dmax>` frames for the algorithm to consider. A higher number could control for intermittent false negatives but also increases the porbability of misclassification due to cell growth and movement. The `min_samples` and `eps` variables are required arguments for the DBSCAN algorithm. For further explanation see [sklearn.cluster.DBSCAN](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html).
-* **Output** A list of `labels` and a list of their `coordinates` [time,y,x]. The labels give the same number (starting from 0) to the cells that are the same over time. -1 indicates noise. 
+* **Output** A list of `labels` and a list of their `coordinates` [time,y,x]. The labels give the same number (starting from 0) to the cells that are the same over time. -1 indicates noise.
+
 <table>
   <tr>	
     <td>
@@ -48,15 +62,24 @@ The example pipeline gives segmentation and tracking results of brightfield time
     </td>
   </tr>
     <tr>
-    <td>Figure 2. Example of segmented and tracked yeast cells from pipeline output.</td>
+    <td>Figure 3. Segmented and tracked yeast cells from pipeline output.</td>
   </tr>
 </table>
-
----
 
 **Feature extraction**
 
 This pipeline allows you to extract several features about the detected yeast cells in the time-series. The `features.group` function groups the segmentations by frame. You can use the `features.get_seg_track` function to find the number of segmentations and number of tracked cells (in total or by frame). The `features.extract_contours` function gives the contour points [x,y] for each segmentation. You can visualize the segmentations and tracks in a movie using `visualize.create_scene` and `visualize.show_animation`. Further, you can use `visualize.select_cell` to select a particular cell by label and zoom in on it to observe it better in the movie. The movie displayed with default options gives each cell a unique color that stays the same throughout the movie if the cell is tracked correctly. You also have the options to display the label number by setting the parameter `labelnum` to `True`. The `features.polygons_per_cluster` function uses the [Shapely](https://shapely.readthedocs.io/en/stable/manual.html) polygon class to output polygons for each label. The polygon class can be used to extract the area of the polygon and plot it over time.
+
+<table>
+  <tr>	
+    <td>
+        <img src="images/figures/movie1_image_area_profile.png"/>
+    </td>
+  </tr>
+    <tr>
+    <td>Figure 4. Area profile of a selected yeast cell.</td>
+  </tr>
+</table>
 
 # Evaluation
 
@@ -66,7 +89,22 @@ We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](ht
 
 The YeaZ segmentation and tracking output was obtained by using the [YeaZ-GUI](https://github.com/lpbsscientist/YeaZ-GUI) with the recommended default parameters.
 
-We matched the centroids provided in the benchmark ground truth data to the mask outputs of our pipeline and YeaZ. We then calculated precision, recall, and the F1-score. #insert table #YM
+We matched the centroids provided in the benchmark ground truth data to the mask outputs of our pipeline and YeaZ. We then calculated precision, recall, and the F1-score.
+
+<table>
+  <tr>	
+    <td>
+        <img src="images/figures/evaluation_table.png"/>
+    </td>
+  </tr>
+    <tr>
+    <td>Table 1. Evaluation results from 4 test sets from the YIT. The F1-score of the performance of our pipeline and of YeaZ are reported.</td>
+  </tr>
+</table>
 
 # False positive removal 
+
+# Future work
+## Geneology
+* In order to separate mothers from children
 

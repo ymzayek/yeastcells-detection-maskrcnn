@@ -36,18 +36,27 @@ def get_centroids(coordinates, labels):
     
     return centroids
 
-def get_seg_track(labels):
-    segs = print('The number of segmentations is ' + str(len(labels)))
-    tracks = print('The number of tracked cells is ' + str(len(np.unique(labels[labels>=0]))))
-    
-    return segs, tracks
-
 def group(l, outputs):
     boundaries = np.cumsum([0] + [len(o['instances']) for o in outputs])
     return [
         l[a:b]
         for a, b in zip(boundaries, boundaries[1:])
     ]
+
+def get_seg_track(labels, output, frame = None):
+    if frame is None:
+        segs = print('The number of segmentations is ' + str(len(labels)))
+        tracks = print('The number of tracked cells is ' + str(len(np.unique(labels[labels>=0]))))
+    else:
+        grouped = group(labels, output) # group labels by frame
+        segs = print(f'The number of segmentations in frame {frame} is ' + str(len(grouped[frame-1])))
+        tracks = print(f'The number of tracked cells in frame {frame} is ' + str(len(np.unique(grouped[frame-1][labels>=0]))))
+    
+    return segs, tracks
+
+def track_len(cluster_labels, label_num = 0):
+    counts = Counter(cluster_labels)
+    return counts[label_num]
 
 def polygons_per_cluster(labels, contours, output, include_noise=False):
     if include_noise is True:
@@ -56,8 +65,6 @@ def polygons_per_cluster(labels, contours, output, include_noise=False):
         polygons = {l: {}  for l in set(labels) if l>=0}
     for z, (labels_, x, y) in enumerate(zip(group(labels, output), *contours)):
         for label, x_, y_ in zip(labels_, x, y):
-            if label < 0: 
-                continue
             p = np.concatenate(
                 (x_[:, None], y_[:, None]),
                 axis=1
