@@ -13,7 +13,7 @@ Automatic segmentation and tracking of budding yeast cells in time-series bright
 # Project description
 
 **Goals** 
-* To implement an automatic sgementation pipeline using a mask R-CNN trained on synthetic brightfield data and requires no finetuning. 
+* To implement an automatic segmentation pipeline using a mask R-CNN trained on synthetic brightfield data. 
 * To track cells across time frames using DBSCAN clustering based on intersection-over-union
 
 See https://github.com/prhbrt/synthetic-yeast-cells for the synthetic training data toolkit used to train the mask R-CNN.
@@ -33,7 +33,7 @@ The example pipeline gives segmentation and tracking results of brightfield time
     </td>
   </tr>
     <tr>
-    <td>Figure 1. Example of our input brightfield image.</td>
+    <td>Figure 1. Example of input brightfield image.</td>
   </tr>
 </table>
 
@@ -52,7 +52,7 @@ The example pipeline gives segmentation and tracking results of brightfield time
 
 
 **Tracking**  
-* **Input** The tracking results are obtained by applying the `clustering.cluster_cells` function on the `output` which uses DBSCAN to cluster the detections into labels representing the same cell over time. You can set a maximum time-distance of `<dmax>` frames for the algorithm to consider. A higher number could control for intermittent false negatives but also increases the porbability of misclassification due to cell growth and movement. The `min_samples` and `eps` variables are required arguments for the DBSCAN algorithm. For further explanation see [sklearn.cluster.DBSCAN](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html).
+* **Input** The tracking results are obtained by applying the `clustering.cluster_cells` function on the `output` which uses DBSCAN to cluster the detections into labels representing the same cell over time. You can set a maximum time-distance of `<dmax>` frames for the algorithm to look at ahead and behind that current frame. This will calculate distances between instances in the current frame and the following and previous frames up to dmax. A higher dmax could control for intermittent false negatives because if a cell is missed in the following frame but picked up again 2 frames ahead, the cell will be tracked. However, this also increases the porbability of misclassification due to cell growth and movement with time if you look ahead too far. The `min_samples` and `eps` variables are required arguments for the DBSCAN algorithm. For further explanation see [sklearn.cluster.DBSCAN](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html).
 * **Output** A list of `labels` and a list of their `coordinates` [time,y,x]. The labels give the same number (starting from 0) to the cells that are the same over time. -1 indicates noise.
 
 <table>
@@ -85,11 +85,11 @@ This pipeline allows you to extract several features about the detected yeast ce
 
 See [evaluation notebook](https://git.webhosting.rug.nl/P301081/yeastcells-detection-maskrcnn/src/branch/master/notebooks/example_evaluation.ipynb). 
 
-We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](http://yeast-image-toolkit.biosim.eu/) (YIT) (Versari et al., 2017). On this platform, several exisiting pipelines have been evaluated for their segmentation and tracking performance. We tested our pipeline and that of YeaZ (Dietler et al., 2020) on several test sets from this platform. We chose to compare our pipeline with YeaZ because they too use a deep learning CNN, unlike the other pipelines evalued on YIT. 
+We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](http://yeast-image-toolkit.biosim.eu/) (YIT) (Versari et al., 2017). On this platform, several exisiting pipelines have been evaluated for their segmentation and tracking performance. We tested our pipeline and that of YeaZ (Dietler et al., 2020) on several test sets from this platform. We chose to compare our pipeline with YeaZ because they too use a deep learning CNN, unlike the other pipelines evaluated on YIT. 
 
 The YeaZ segmentation and tracking output was obtained by using the [YeaZ-GUI](https://github.com/lpbsscientist/YeaZ-GUI) with the recommended default parameters.
 
-We matched the centroids provided in the benchmark ground truth data to the mask outputs of our pipeline and YeaZ. We then calculated precision, recall, and the F1-score.
+We matched the centroids provided in the benchmark ground truth data to the mask outputs of our pipeline and YeaZ. This is slightly different than the way it was done on the evaluation platform of YIT but comparable since they matched centroids of the prediction to the centroids of the ground truth with a maximum distance threshold to count as a true positive (see their [EP](https://github.com/Fafa87/EP) for more detail). We then calculated precision, recall, accuracy, and the F1-score.
 
 <table>
   <tr>	
@@ -100,11 +100,11 @@ We matched the centroids provided in the benchmark ground truth data to the mask
     <tr>
     <td>Table 1. Evaluation results from 4 test sets from the YIT. The F1-score of the performance of our pipeline and of YeaZ are reported.</td>
   </tr>
-</table>
-
-# False positive removal 
+</table> 
 
 # Future work
-## Geneology
-* In order to separate mothers from children
+### False positive removal
+* 
+### Geneology
+* 
 

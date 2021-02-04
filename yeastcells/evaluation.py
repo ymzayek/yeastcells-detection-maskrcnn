@@ -75,22 +75,6 @@ def get_track_performance(pred_t, gt_t, output, removed_fp = False, index=None):
         "join": join, "split": split
     }
 
-def get_true_positives(pred_s, gt_s, output):
-    pred = copy.deepcopy(pred_s)
-    gt = copy.deepcopy(gt_s)
-    masks = [m for i in output for m in np.array(
-        i['instances'].pred_masks.to('cpu'), dtype=int
-    )]
-    tp_labels = np.zeros((len(pred)))
-    c1 = 0
-    for pred_frame, mask in zip(pred[:,0], masks):
-        for gt_frame, gt_x, gt_y in zip(gt[:,0], gt[:,2], gt[:,3]):
-            if (pred_frame==gt_frame) & (mask[gt_y,gt_x]==1):
-                tp_labels[c1]=1
-        c1+=1    
-    
-    return tp_labels
-
 def calculate_metrics(results, pred, gt):
     precision = results["tp"]/len(pred)
     recall = results["tp"]/len(gt)

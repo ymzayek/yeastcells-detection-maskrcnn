@@ -29,6 +29,22 @@ def remove_by_size(contours, points = 10):
     return idx 
 
 #method 2
+def get_labels(pred_s, gt_s, output):
+    pred = copy.deepcopy(pred_s)
+    gt = copy.deepcopy(gt_s)
+    masks = [m for i in output for m in np.array(
+        i['instances'].pred_masks.to('cpu'), dtype=int
+    )]
+    y = np.zeros((len(pred)))
+    c1 = 0
+    for pred_frame, mask in zip(pred[:,0], masks):
+        for gt_frame, gt_x, gt_y in zip(gt[:,0], gt[:,2], gt[:,3]):
+            if (pred_frame==gt_frame) & (mask[gt_y,gt_x]==1):
+                y[c1]=1
+        c1+=1    
+    
+    return y    
+
 def train_rf(X, y):
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size = 0.25, random_state = 42
