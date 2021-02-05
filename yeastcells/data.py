@@ -68,7 +68,7 @@ def get_pred(output, labels, coordinates):
     pred_s[:,2] = coordinates[:,2] # Position_X
     pred_s[:,3] = coordinates[:,1] # Position_Y
     pred_t = pred_s.copy()
-    pred_s_df = pd.DataFrame(pred_s, columns=["Frame_number", "Cell_number", "Cell_colour", "Position_X", "Position_Y"])
+    pred_s_df = pd.DataFrame(pred_s, columns=["Frame_number", "Cell_number", "Position_X", "Position_Y"])
     pred_t_df = pd.DataFrame(pred_t, columns=["Frame_number", "Cell_number", "Position_X", "Position_Y"])
 
     return pred_s, pred_s_df, pred_t, pred_t_df
