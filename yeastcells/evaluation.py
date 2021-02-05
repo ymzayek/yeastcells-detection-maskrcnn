@@ -28,9 +28,10 @@ def get_seg_performance(pred_s, gt_s, output, removed_fp = False, index=None):
     fp = [1 for i in range(len(r)) if r[i].sum()==0]
     join = [1 for i in range(len(r)) if r[i].sum()>1]
     split = [1 for i in range(len(r.T)) if r.T[i].sum()>1]      
+    fn = len(gt) - len(tp)
     
     return pred, {
-        "tp": len(tp), "fp": len(fp), "join": len(join), "split": len(split)
+        "tp": len(tp), "fp": len(fp), "fn": fn, "join": len(join), "split": len(split)
     }
 
 def get_track_performance(pred_t, gt_t, output, removed_fp = False, index=None):
@@ -56,7 +57,7 @@ def get_track_performance(pred_t, gt_t, output, removed_fp = False, index=None):
         c1+=1
     
     #calculate true positives, false positives, joined tracks, and split tracks
-    n_matched_tracks = len(Counter(labels_matched))            
+    #n_matched_tracks = len(Counter(labels_matched))            
     tracking_pairs = [i for i in Counter(labels_matched).keys()]
     tracking_pairs = [[i for i,j in tracking_pairs], [j for i,j in tracking_pairs]]    
     join,c_0 = np.unique(tracking_pairs[0], return_counts=True)
@@ -69,15 +70,18 @@ def get_track_performance(pred_t, gt_t, output, removed_fp = False, index=None):
     n_matched_links = sum(np.array(list(Counter(labels_matched).values())) - 1)
     pred_number_of_links = sum(np.array(list(Counter(pred[:,1]).values()))-1)
     gt_number_of_links = sum(np.array(list(Counter(gt[:,1]).values())) -1)
+    fn = gt_number_of_links - n_matched_links
+    fp = pred_number_of_links-n_matched_links
     
     return labels_matched, pred_number_of_links, gt_number_of_links, {
-        "tp": n_matched_links, "fp": (pred_number_of_links-n_matched_links),
+        "tp": n_matched_links, "fp": fp, "fn": fn,
         "join": join, "split": split
     }
 
 def calculate_metrics(results, pred, gt):
-    precision = results["tp"]/len(pred)
-    recall = results["tp"]/len(gt)
+    precision = results["tp"]/(results["tp"]+results["fp"])
+    recall = results["tp"]/(results["tp"]+results["fn"])
+    accuracy = results["tp"]/(results["tp"]+results["fp"]+results["fn"])
     F = 2 * ((precision*recall) / (precision + recall))
     
-    return {'F1-score': F, 'Precision': precision, 'Recall': recall}
+    return {'F1-score': F, 'Accuracy': accuracy, 'Precision': precision, 'Recall': recall}
