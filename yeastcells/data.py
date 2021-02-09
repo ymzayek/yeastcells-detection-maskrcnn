@@ -85,7 +85,7 @@ def read_tiff_mask(path):
     masks = np.array(masks)
     return masks
 
-def extract_labels(masks, progress=False):
+def extract_masks(masks, progress=False):
     '''
     Parameters
     ----------
@@ -98,7 +98,7 @@ def extract_labels(masks, progress=False):
     labels : ndarray
         Tracking labels of individual instances.
     coordinates : ndarray
-        Coordinates of centroid of individual instances with 2 dimensions (labels, (label#, Y, X)).
+        Coordinates of centroid of individual instances with 2 dimensions (labels, ([time, Y, X])).
     instances : ndarray
         A mask array for each labeled instances.
     '''
@@ -115,6 +115,15 @@ def extract_labels(masks, progress=False):
             i+=1
     coordinates = np.array([(t, ) + tuple(map(np.mean, np.where(m == 1.))) for t,m in enumerate(instances)])  
     labels = np.hstack(labels_grouped)
+    offset_frames = np.zeros((len(labels)),dtype=int)
+    n=0
+    for f in range(len(labels_grouped)):
+        tmp = len(labels_grouped[f])
+        offset_=n
+        for n in range(offset_,tmp+offset_):
+            offset_frames[n] = f
+            n+=1
+    coordinates[:,0] = offset_frames
     return labels_grouped, labels, coordinates, instances 
 
 def get_gt(seg_path, track_path):
@@ -154,3 +163,19 @@ def get_pred(output, labels, coordinates):
     pred_t_df = pd.DataFrame(pred_t, columns=["Frame_number", "Cell_number", "Position_X", "Position_Y"])
 
     return pred_s, pred_s_df, pred_t, pred_t_df
+
+def get_pred_(labels_grouped, labels, coordinates):
+    pred_s= np.zeros(((len(labels),4))).astype(int)
+    i=0
+    for f in range(len(labels_grouped)):
+        instance = len(labels_grouped[f])
+        offset=i
+        for i in range(offset,instance+offset):
+            pred_s[i,0] = f+1 # Frame_number
+            i+=1
+    pred_s[:,1] = labels # Cell_number
+    pred_s[:,2] = coordinates[:,2] # Position_X
+    pred_s[:,3] = coordinates[:,1] # Position_Y 
+    pred_t = pred_s.copy()
+    
+    return pred_s, pred_t
