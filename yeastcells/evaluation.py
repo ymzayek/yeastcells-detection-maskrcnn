@@ -3,13 +3,16 @@ import numpy as np
 import copy
 from collections import Counter
 
-def get_seg_performance(pred_s, gt_s, output, removed_fp = False, index=None):
+def get_seg_performance(pred_s, gt_s, output, pipeline = 'maskrcnn', removed_fp = False, index=None):
     pred = copy.deepcopy(pred_s)
     gt = copy.deepcopy(gt_s)
-    masks = [
-        m for i in output for m in np.array(
-            i['instances'].pred_masks.to('cpu'), dtype=int)
-    ]
+    if pipeline == 'YeaZ':
+        masks = [mask for mask in output]
+    if pipeline == 'maskrcnn':    
+        masks = [
+            m for i in output for m in np.array(
+                i['instances'].pred_masks.to('cpu'), dtype=int)
+        ]
     if removed_fp is True:
         masks = [i for j, i in enumerate(masks) if j not in index]
         pred = np.array([i for j, i in enumerate(pred) if j not in index]) #remove false positives
@@ -34,13 +37,16 @@ def get_seg_performance(pred_s, gt_s, output, removed_fp = False, index=None):
         "tp": len(tp), "fp": len(fp), "fn": fn, "join": len(join), "split": len(split)
     }
 
-def get_track_performance(pred_t, gt_t, output, removed_fp = False, index=None):
+def get_track_performance(pred_t, gt_t, output, pipeline = 'maskrcnn', removed_fp = False, index=None):
     pred = copy.deepcopy(pred_t)
     gt = copy.deepcopy(gt_t)
-    masks = [
-        m for i in output for m in np.array(
-            i['instances'].pred_masks.to('cpu'), dtype=int)
-    ]
+    if pipeline == 'YeaZ':
+        masks = [mask for mask in output]
+    if pipeline == 'maskrcnn':    
+        masks = [
+            m for i in output for m in np.array(
+                i['instances'].pred_masks.to('cpu'), dtype=int)
+        ]
     if removed_fp is True:
         masks = [i for j, i in enumerate(masks) if j not in index]
         pred = np.array([i for j, i in enumerate(pred) if j not in index]) #remove false positives
@@ -73,7 +79,7 @@ def get_track_performance(pred_t, gt_t, output, removed_fp = False, index=None):
     fn = gt_number_of_links - n_matched_links
     fp = pred_number_of_links-n_matched_links
     
-    return labels_matched, pred_number_of_links, gt_number_of_links, {
+    return pred, {
         "tp": n_matched_links, "fp": fp, "fn": fn,
         "join": join, "split": split
     }

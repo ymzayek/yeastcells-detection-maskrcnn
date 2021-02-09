@@ -42,11 +42,11 @@ The example pipeline gives segmentation and tracking results of brightfield time
 <table>
   <tr>	
     <td>
-        <img src="images/figures/movie1_image_detections.png"/>
+        <img src="images/figures/seg_figure.png"/>
     </td>
   </tr>
     <tr>
-    <td>Figure 2. Detected yeast cells are highlighted by a purple border.</td>
+    <td>Figure 2. Detected yeast cells are highlighted by a purple border. A) shows the segmentations in the first frame of a time-series. B) is zoomed in on part of the frame showing segmentations across the border of a pillar.</td>
   </tr>
 </table>
 
@@ -116,8 +116,8 @@ We matched the centroids provided in the benchmark ground truth data to the mask
 </table> 
 
 # Future work
-### False positive removal
-* 
-### Geneology
+### **False positive removal**
+False positives can appear in the microscopy images due to several reasons, such as trapped dirt or dust or the presence of dead cells. To control for this we set up the possibility of training a random forest on several features of the yeast cells. This will allow us to automatically remove false positives from the segmentation output. It could also support the setting of a standard and low segmentation threshold score that will allow for many false positives, which can then be easily removed. This would standardize the process of searching for the best threshold to use for segmentation and ensure that a too strict threshold that would miss true cells is not chosen. For this step, however, we need labeled training data, which can potentially be set up through the synthetic training data toolkit.
+### **Geneology**
 * 
 
