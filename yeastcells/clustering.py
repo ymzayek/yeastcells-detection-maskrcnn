@@ -8,10 +8,32 @@ from collections import Counter
 import lapjv
 
 def existance_vectors(output):
+    '''
+    Parameters
+    ----------
+    output : dict
+        Predictor output from the detecron2 model.
+    Returns
+    -------
+    float32 ym
+        DESCRIPTION.
+    '''
     o = np.array(output['instances'].pred_masks.to('cpu'))
     return o.reshape(o.shape[0], -1).astype(np.float32)
 
 def calc_iou(outputs0, outputs1):
+    '''
+    Parameters
+    ----------
+    outputs0 : TYPE
+        DESCRIPTION.
+    outputs1 : TYPE
+        DESCRIPTION.
+    Returns
+    -------
+    iou : TYPE
+        DESCRIPTION.
+    '''
     overlaps = np.dot(outputs0, outputs1.T)
     szi, szj = outputs0.sum(1), outputs1.sum(1)
     summed = (szi[:, None] + szj[None])
@@ -20,6 +42,21 @@ def calc_iou(outputs0, outputs1):
     return iou
 
 def get_distances(outputs, dmax=5, progress=False):
+    '''
+    Parameters
+    ----------
+    output : dict
+        Predictor output from the detecron2 model.
+    dmax : int, optional
+        The maximum frame distance to look ahead and behind to calculate 
+        the interframe distances between the instances. The default is 5.
+    progress : bool, optional
+        The default is False.
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+    '''
     tqdm_ = tqdm if progress else (lambda x: x)
     offsets = np.cumsum([0] + [len(o['instances']) for o in outputs])
     outputs = list(map(existance_vectors, tqdm_(outputs)))

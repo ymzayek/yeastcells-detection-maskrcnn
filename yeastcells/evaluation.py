@@ -3,7 +3,10 @@ import numpy as np
 import copy
 from collections import Counter
 
-def get_seg_performance(pred_s, gt_s, output, pipeline = 'maskrcnn', removed_fp = False, index=None):
+def get_seg_performance(
+        pred_s, gt_s, output, pipeline='maskrcnn', removed_fp=False, 
+        index=None
+    ):
     pred = copy.deepcopy(pred_s)
     gt = copy.deepcopy(gt_s)
     if pipeline == 'YeaZ':
@@ -26,18 +29,24 @@ def get_seg_performance(pred_s, gt_s, output, pipeline = 'maskrcnn', removed_fp 
             c2+=1
         c1+=1
     
-    #calculate true positives, false positives, joined segmentations, and split segmentations
-    tp = [1 for i in range(len(r)) if r[i].sum()==1]
-    fp = [1 for i in range(len(r)) if r[i].sum()==0]
+    #calculate true positives, false positives, false negatives, joined, and split segmentations
     join = [1 for i in range(len(r)) if r[i].sum()>1]
     split = [1 for i in range(len(r.T)) if r.T[i].sum()>1]      
-    fn = len(gt) - len(tp)
+    tp = [1 for i in range(len(r)) if r[i].sum()==1]
+    tp = len(tp) + len(split)
+    fp = [1 for i in range(len(r)) if r[i].sum()==0]
+    fp = len(fp) + len(split)
+    fn = len(gt) - tp
     
     return pred, {
-        "tp": len(tp), "fp": len(fp), "fn": fn, "join": len(join), "split": len(split)
+        "tp": tp, "fp": fp, "fn": fn, 
+        "join": len(join), "split": len(split)
     }
 
-def get_track_performance(pred_t, gt_t, output, pipeline = 'maskrcnn', removed_fp = False, index=None):
+def get_track_performance(
+        pred_t, gt_t, output, pipeline='maskrcnn', removed_fp=False, 
+        index=None
+    ):
     pred = copy.deepcopy(pred_t)
     gt = copy.deepcopy(gt_t)
     if pipeline == 'YeaZ':
@@ -56,28 +65,28 @@ def get_track_performance(pred_t, gt_t, output, pipeline = 'maskrcnn', removed_f
     for pred_frame, pred_lab, mask in zip(pred[:,0], pred[:,1], masks):
         c2 = 0
         for gt_frame, gt_lab, gt_x, gt_y in zip(gt[:,0], gt[:,1], gt[:,2], gt[:,3]):
-            if (pred_frame==gt_frame) & (mask[gt_y,gt_x]==1) & (pred_lab != -1):
+            if (pred_frame==gt_frame) & (mask[gt_y,gt_x]==1) & (pred_lab!=-1):
                 r[c1,c2]=1
-                labels_matched.append((pred_lab,gt_lab))
+                labels_matched.append((pred_lab, gt_lab))
             c2+=1
         c1+=1
     
-    #calculate true positives, false positives, joined tracks, and split tracks
+    #calculate true positives, false positives, false negatives, joined tracks, and split tracks
     #n_matched_tracks = len(Counter(labels_matched))            
     tracking_pairs = [i for i in Counter(labels_matched).keys()]
     tracking_pairs = [[i for i,j in tracking_pairs], [j for i,j in tracking_pairs]]    
-    join,c_0 = np.unique(tracking_pairs[0], return_counts=True)
-    join = len(join[c_0 > 1])
-    split,c_1 = np.unique(tracking_pairs[1], return_counts=True)
-    split = len(split[c_1 > 1])
+    join, c_0 = np.unique(tracking_pairs[0], return_counts=True)
+    join = len(join[c_0>1])
+    split, c_1 = np.unique(tracking_pairs[1], return_counts=True)
+    split = len(split[c_1>1])
     
     #calculate by # of correct links
     
-    n_matched_links = sum(np.array(list(Counter(labels_matched).values())) - 1)
+    n_matched_links = sum(np.array(list(Counter(labels_matched).values()))-1)
     pred_number_of_links = sum(np.array(list(Counter(pred[:,1]).values()))-1)
-    gt_number_of_links = sum(np.array(list(Counter(gt[:,1]).values())) -1)
+    gt_number_of_links = sum(np.array(list(Counter(gt[:,1]).values()))-1)
     fn = gt_number_of_links - n_matched_links
-    fp = pred_number_of_links-n_matched_links
+    fp = pred_number_of_links - n_matched_links
     
     return pred, {
         "tp": n_matched_links, "fp": fp, "fn": fn,
@@ -90,4 +99,7 @@ def calculate_metrics(results, pred, gt):
     accuracy = results["tp"]/(results["tp"]+results["fp"]+results["fn"])
     F = 2 * ((precision*recall) / (precision + recall))
     
-    return {'F1-score': F, 'Accuracy': accuracy, 'Precision': precision, 'Recall': recall}
+    return {
+        'F1-score': F, 'Accuracy': accuracy, 
+        'Precision': precision, 'Recall': recall
+    }
