@@ -7,6 +7,30 @@ def get_seg_performance(
         pred_s, gt_s, output, pipeline='maskrcnn', removed_fp=False, 
         index=None
     ):
+    '''
+
+    Parameters
+    ----------
+    pred_s : ndarray
+        Segmentation predictions.  
+    gt_s : ndarray
+        Segmentation ground truth.
+    output : dict
+        Predictor output from the detecron2 model.
+    pipeline : str, optional
+        Can be set to 'maskrcnn' or 'YeaZ'. The default is 'maskrcnn'.
+    removed_fp : bool, optional
+        Set an option to remove false positives. The default is False.
+    index : list, optional
+        The index of false positive predictions that will be removed. The default is None.
+    Returns
+    -------
+    pred : ndarray
+        Segmentation predictions with or without false positives.
+    dict
+        Performance indicators: true positives (tp), false positives (fp), 
+        false negatives (fn), joined segmentations (join), split segmentations (split).
+    '''
     pred = copy.deepcopy(pred_s)
     gt = copy.deepcopy(gt_s)
     if pipeline == 'YeaZ':
@@ -18,7 +42,7 @@ def get_seg_performance(
         ]
     if removed_fp is True:
         masks = [i for j, i in enumerate(masks) if j not in index]
-        pred = np.array([i for j, i in enumerate(pred) if j not in index]) #remove false positives
+        pred = np.array([i for j, i in enumerate(pred) if j not in index])
     r = np.zeros((len(pred),len(gt)))
     c1 = 0
     for pred_frame, mask in zip(pred[:,0], masks):
@@ -29,7 +53,6 @@ def get_seg_performance(
             c2+=1
         c1+=1
     
-    #calculate true positives, false positives, false negatives, joined, and split segmentations
     join = [1 for i in range(len(r)) if r[i].sum()>1]
     split = [1 for i in range(len(r.T)) if r.T[i].sum()>1]      
     tp = [1 for i in range(len(r)) if r[i].sum()==1]
@@ -58,7 +81,7 @@ def get_track_performance(
         ]
     if removed_fp is True:
         masks = [i for j, i in enumerate(masks) if j not in index]
-        pred = np.array([i for j, i in enumerate(pred) if j not in index]) #remove false positives
+        pred = np.array([i for j, i in enumerate(pred) if j not in index])
     r = np.zeros((len(pred),len(gt)))
     c1 = 0
     labels_matched = []
@@ -71,7 +94,6 @@ def get_track_performance(
             c2+=1
         c1+=1
     
-    #calculate true positives, false positives, false negatives, joined tracks, and split tracks
     #n_matched_tracks = len(Counter(labels_matched))            
     tracking_pairs = [i for i in Counter(labels_matched).keys()]
     tracking_pairs = [[i for i,j in tracking_pairs], [j for i,j in tracking_pairs]]    
@@ -81,7 +103,6 @@ def get_track_performance(
     split = len(split[c_1>1])
     
     #calculate by # of correct links
-    
     n_matched_links = sum(np.array(list(Counter(labels_matched).values()))-1)
     pred_number_of_links = sum(np.array(list(Counter(pred[:,1]).values()))-1)
     gt_number_of_links = sum(np.array(list(Counter(gt[:,1]).values()))-1)

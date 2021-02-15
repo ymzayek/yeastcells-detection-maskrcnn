@@ -6,7 +6,7 @@ from PIL import Image
 import os
 from .clustering import existance_vectors
 
-def load_data(path):
+def load_data(path, ff = '.tif'):
     '''
     Parameters
     ----------
@@ -20,13 +20,13 @@ def load_data(path):
     fns = [
         f'{path}/{fn}' 
         for fn in os.listdir(f'{path}/') 
-        if fn.endswith('.tif')
+        if fn.endswith(ff)
     ]
     fns= np.sort(fns)
     
     return fns
 
-def read_image(fn):
+def read_image(fn, single_im=False):
     '''
     Reads images into an array with correct shape for input into detectron2 
     predictor.
@@ -40,14 +40,18 @@ def read_image(fn):
         A 4-dimensional array (frames, length, width, channels).
     '''
     image = imread(fn)  
-    if image.ndim==4:  
+    if image.ndim==4 and single_im==False:  
         return (
             (image / 65535 * 255)[:, ..., :1] * [[[1, 1, 1]]]
         ).astype(np.uint8)
-    if image.ndim==3:  
+    if image.ndim==3 and single_im==False:  
         return (
             (image / image.max() * 255)[:, ..., None] * [[[1, 1, 1]]]
         ).astype(np.uint8)
+    if image.ndim==3 and single_im==True:  
+      return (
+        (image / image.max() * 255)[None, ..., :1] * [[[1, 1, 1]]]
+      ).astype(np.uint8) 
     
 def read_images_cat(fns): 
     '''
@@ -137,7 +141,7 @@ def extract_labels(masks, progress=False):
     coordinates[:,0] = offset_frames
     return labels_grouped, labels, coordinates, instances 
 
-def get_gt_yit(seg_path, track_path = None):
+def get_gt_yit(seg_path, track_path):
     '''
     Retrieves and reformats ground truth data into arrays.
     Parameters
@@ -154,19 +158,18 @@ def get_gt_yit(seg_path, track_path = None):
         Tracking ground truth.    ym
     '''
     gt_s_df=pd.read_csv(f'{seg_path}')
+    gt_t_df=pd.read_csv(f'{track_path}')
     gt_s_df.columns = [n.replace(' ', '') for n in gt_s_df.columns] 
+    gt_t_df.columns = [n.replace(' ', '') for n in gt_t_df.columns]
     gt_s_df = gt_s_df.drop(columns=['Cell_colour'])
     gt_s = np.round(gt_s_df.to_numpy(copy=True)).astype(int)
-    if track_path is not None:
-        gt_t_df=pd.read_csv(f'{track_path}')
-        gt_t_df.columns = [n.replace(' ', '') for n in gt_t_df.columns]
-        gt_t_df = gt_t_df.drop(columns=['Cell_number'])
-        gt_t = gt_t_df.to_numpy(copy=True)
-        gt_t = np.column_stack((gt_t,gt_s[:,2]))
-        gt_t = np.column_stack((gt_t,gt_s[:,3]))
-        return gt_s, gt_t
-    else:
-        return gt_s
+    
+    gt_t_df = gt_t_df.drop(columns=['Cell_number'])
+    gt_t = gt_t_df.to_numpy(copy=True)
+    gt_t = np.column_stack((gt_t,gt_s[:,2]))
+    gt_t = np.column_stack((gt_t,gt_s[:,3]))
+    
+    return gt_s, gt_t
 
 def get_pred(output, labels, coordinates):
     '''

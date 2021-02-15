@@ -38,6 +38,22 @@ def get_centroids(coordinates, labels):
     
     return centroids
 
+def get_instance_numbers(output):
+    o = list(map(existance_vectors, output))
+    inst_num = np.array([], dtype=int)
+    for f in range(len(o)):
+        instance = len(o[f])
+        tmp = np.arange(instance)
+        inst_num = np.hstack((inst_num,tmp))
+    
+    coordinates = np.array([
+        (t, ) + tuple(map(np.mean, np.where(mask)))
+        for t, o in enumerate(output)
+        for mask in output['instances'].pred_masks.to('cpu')
+    ])    
+        
+    return inst_num, coordinates    
+
 def group(l, outputs):
     boundaries = np.cumsum([0] + [len(o['instances']) for o in outputs])
     return [
