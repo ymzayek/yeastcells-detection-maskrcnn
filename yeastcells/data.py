@@ -4,7 +4,6 @@ import pandas as pd
 from skimage.io import imread
 from PIL import Image
 import os
-from .clustering import existance_vectors
 
 def load_data(path, ff = '.tif'):
     '''
@@ -26,7 +25,7 @@ def load_data(path, ff = '.tif'):
     
     return fns
 
-def read_image(fn, single_im=False):
+def read_image(fn, single_im=False, shape=1):
     '''
     Reads images into an array with correct shape for input into detectron2 
     predictor.
@@ -38,17 +37,21 @@ def read_image(fn, single_im=False):
     -------
     ndarray
         A 4-dimensional array (frames, length, width, channels).
-    '''
-    image = imread(fn)  
+    ''' 
+    if shape==1: 
+        image = imread(fn) 
+    elif shape==2: 
+        image = imread(fn) 
+        image = np.rollaxis(image,1,4)
     if image.ndim==4 and single_im==False:  
         return (
             (image / image.max() * 255)[:, ..., :1] * [[[1, 1, 1]]]
         ).astype(np.uint8)
-    if image.ndim==3 and single_im==False:  
+    elif image.ndim==3 and single_im==False:  
         return (
             (image / image.max() * 255)[:, ..., None] * [[[1, 1, 1]]]
         ).astype(np.uint8)
-    if image.ndim==3 and single_im==True:  
+    elif image.ndim==3 and single_im==True:  
       return (
         (image / image.max() * 255)[None, ..., :1] * [[[1, 1, 1]]]
       ).astype(np.uint8) 
@@ -193,12 +196,11 @@ def get_pred(output, labels, coordinates):
         Combined segmentation and tracking results
         -1 labels considered as noise for tracking.         
     '''
-    o = list(map(existance_vectors, output))
     pred_s= np.zeros(((len(labels),4))).astype(int)
     cell_num = np.array([], dtype=int)
     i=0
-    for f in range(len(o)):
-        instance = len(o[f])
+    for f in range(len(output)):
+        instance = len(output[f])
         tmp = np.arange(instance)
         cell_num = np.hstack((cell_num,tmp))
         offset=i

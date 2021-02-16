@@ -15,8 +15,8 @@ def existance_vectors(output):
         Predictor output from the detecron2 model.
     Returns
     -------
-    float32 ym
-        DESCRIPTION.
+    ndarray
+        Get masks in frames.
     '''
     o = np.array(output['instances'].pred_masks.to('cpu'))
     return o.reshape(o.shape[0], -1).astype(np.float32)

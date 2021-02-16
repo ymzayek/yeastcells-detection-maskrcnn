@@ -4,7 +4,6 @@ import cv2
 from collections import Counter
 from shapely.geometry import Polygon, Point
 import math
-from .clustering import existance_vectors
 
 def extract_contours(output):
     outputs = output
@@ -39,10 +38,9 @@ def get_centroids(coordinates, labels):
     return centroids
 
 def get_instance_numbers(output):
-    o = list(map(existance_vectors, output))
     inst_num = np.array([], dtype=int)
-    for f in range(len(o)):
-        instance = len(o[f])
+    for f in range(len(output)):
+        instance = len(output[f])
         tmp = np.arange(instance)
         inst_num = np.hstack((inst_num,tmp))
     
@@ -68,30 +66,24 @@ def get_seg_track(labels, output, frame = None):
     else:
         grouped = group(labels, output) # group labels by frame
         segs = print(f'The number of segmentations in frame {frame} is ' + str(len(grouped[frame-1])))
-        tracks = print(f'The number of tracked cells in frame {frame} is ' + str(len(np.unique(grouped[frame-1][labels>=0]))))
+        tracks = print(f'The number of tracked cells in frame {frame} is ' + str(len(np.unique(grouped[frame-1][grouped[frame-1]>=0]))))
     
     return segs, tracks
 
-def track_len(cluster_labels, label_num = 0):
-    counts = Counter(cluster_labels)
-    return counts[label_num]
+def track_len(labels, label = 0):
+    counts = Counter(labels)
+    return counts[label]
 
-def polygons_per_instance(contours, output):
-    o = list(map(existance_vectors, output))
-    inst = np.array([], dtype=int)
-    for f in range(len(o)):
-        instance = len(o[f])
-        tmp = np.arange(instance)
-        inst = np.hstack((inst,tmp))
-    polygons_inst = {l: {}  for l in set(inst) if l>=-1}
-    for z, (inst_, x, y) in enumerate(zip(group(inst, output), *contours)):
-        for i, x_, y_ in zip(inst_, x, y):
+def polygons_per_instance(labels, contours, output):
+    polygons_inst = {l: {}  for l in set(labels)}
+    for z, (labels_, x, y) in enumerate(zip(group(labels, output), *contours)):
+        for label, x_, y_ in zip(labels_, x, y):
             p = np.concatenate(
                 (x_[:, None], y_[:, None]),
                 axis=1
             )
             shape = Polygon(p) if len(p) >= 3 else Point(x_.mean(), y_.mean())
-            polygons_inst[i][z] = shape
+            polygons_inst[label][z] = shape
             
     return polygons_inst
 
@@ -99,6 +91,7 @@ def polygons_per_cluster(labels, contours, output):
     polygons_clust = {l: {}  for l in set(labels) if l>=0}
     for z, (labels_, x, y) in enumerate(zip(group(labels, output), *contours)):
         for label, x_, y_ in zip(labels_, x, y):
+            if label < 0: continue
             p = np.concatenate(
                 (x_[:, None], y_[:, None]),
                 axis=1
@@ -150,21 +143,6 @@ def get_features_df(polygons_inst, labels, pred_df): #make sure polygons include
             position_std[n] = np.std(dist_xy)
         n+=1  
     pred_features_df["Position_stdev"] = poly_area
-    
-    # g_rate = np.zeros((len(polygons_inst)),dtype=float)
-    # for l in polygons_inst.keys():
-    #     end = max(pred_df['Frame_number'].values[labels==l])
-    #     start = min(pred_df['Frame_number'].values[labels==l])
-    #     g_rate[l] = (
-    #         polygons_inst[l][end-1].area-polygons_inst[l][start-1].area)/(
-    #         polygons_inst[l][start-1].area+0.00001
-    #     ) # -1 because pred_s starts at 1 and polygons_inst starts at 0
-    #     g_rate = abs(g_rate)
-    # #assign growth rate per segmented instance    
-    # g_rate_ = labels.astype(float).copy() 
-    # for g in range(len(g_rate)):
-    #     g_rate_[g_rate_==g] = g_rate[g]  
-    # pred_features_df["Growth_rate"] = g_rate_ 
         
     return pred_features_df 
 
@@ -175,3 +153,18 @@ def get_masks(output):
     )]
     
     return masks
+
+def get_average_growth_rate(polygons_clust, labels, output):
+    offset_frames = np.zeros((len(labels)),dtype=int)
+    n=0
+    for f in range(len(output)):
+        instances = len(output[f])
+        offset_=n
+        for n in range(offset_,instances+offset_):
+            offset_frames[n] = f+1
+            n+=1
+    agr = np.zeros((len(polygons_clust)),dtype=float)
+    for l in range(0,max(labels)+1): 
+        end = max(offset_frames[labels==l])
+        start = min(offset_frames[labels==l])
+        agr[l] = ((polygons_clust[l][end-1].area/polygons_clust[l][start-1].area)**(1/len(output))) - 1
