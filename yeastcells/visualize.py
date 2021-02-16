@@ -115,7 +115,7 @@ def show_animation(scene, title='', delay = 500):
     
     return movie
 
-def plot_area_profiles(polygons, ti=3, label=[0], ax=None, title=None):
+def plot_area_profiles(polygons, ti=3, label_list=[0], ax=None, title=None):
     if ax is None:
         fig = plt.figure()  
         fig.suptitle(title)

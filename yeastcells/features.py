@@ -112,39 +112,39 @@ def get_features_df(polygons_inst, labels, pred_df): #make sure polygons include
     pred_features_df = pred_df.copy()
     poly_area =np.zeros((len(labels)),dtype=float)
     n=0
-    for lab, frame in zip(pred_df.Cell_label, pred_df.Frame_number):
+    for lab, frame in zip(pred_features_df.Cell_label, pred_features_df.Frame_number):
         poly_area[n] = polygons_inst[lab][frame-1].area
         n+=1
-    pred_features_df["Area"] = poly_area  
+    pred_features_df['Area'] = poly_area  
     
     area_std = np.zeros((len(labels)),dtype=float)
     n=0
-    for l in pred_df.Cell_label:
+    for l in pred_features_df.Cell_label:
         if l is -1:
             area_std[n] = 0
         else:    
             area_std[n] = np.std(
-                pred_df.loc[pred_df['Cell_label'] == l, 'Area']
+                pred_features_df.loc[pred_features_df['Cell_label'] == l, 'Area']
             )
         n+=1
-    pred_features_df["Area_stdev"] = poly_area
+    pred_features_df['Area_stdev'] = poly_area
     
     position_std = np.zeros((len(labels)),dtype=float)
     n=0
-    for l in pred_df.Cell_label:
+    for l in pred_features_df.Cell_label:
         if l is -1:
             position_std[n] = 0
         else:    
             points_xy = np.array(
-                pred_df.loc[
-                pred_df['Cell_label'] == l, ('Position_X', 'Position_Y')
+                pred_features_df.loc[
+                pred_features_df['Cell_label'] == l, ('Position_X', 'Position_Y')
             ])
             dist_xy = []
             for i in range(len(points_xy)-1):
                 dist_xy.append(get_distance(points_xy[i], points_xy[i+1]))
             position_std[n] = np.std(dist_xy)
         n+=1  
-    pred_features_df["Position_stdev"] = poly_area
+    pred_features_df['Position_stdev'] = poly_area
         
     return pred_features_df 
 
