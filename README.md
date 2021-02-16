@@ -31,7 +31,7 @@ The example pipeline gives segmentation and tracking results of brightfield time
 <table>
   <tr>	
     <td>
-        <img src="images/figures/segmentations/seg_examples.png"/>
+        <img src="figures/segmentations/seg_examples.png"/>
     </td>
   </tr>
     <tr>
@@ -47,12 +47,12 @@ The example pipeline gives segmentation and tracking results of brightfield time
 <table>
   <tr>	
     <td>
-        <img src="images/figures/output_xy01_animation.gif"/>
+        <img src="figures/output_xy01_animation.gif"/>
     </td>
   </tr>
     <tr>	
     <td>
-        <img src="images/figures/Movie1_frame40_.gif"/>
+        <img src="figures/Movie1_frame40_.gif"/>
     </td>
   </tr>
     <tr>
@@ -70,12 +70,12 @@ This pipeline allows you to extract several features about the detected yeast ce
 <table>
   <tr>	
     <td>
-        <img src="images/figures/mask_polygon_overlay.png"/>
+        <img src="figures/mask_polygon_overlay.png"/>
     </td>
   </tr>
   <tr>	
     <td>
-        <img src="images/figures/.png"/>
+        <img src="figures/.png"/>
     </td>
   </tr>
     <tr>
@@ -92,7 +92,7 @@ We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](ht
 <table>
   <tr>	
     <td>
-        <img src="images/figures/yit/test_sets_figure_all.png"/>
+        <img src="figures/yit/test_sets_figure_all.png"/>
     </td>
   </tr>
     <tr>
@@ -111,7 +111,7 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
 <table>
   <tr>	
     <td>
-        <img src="images/figures/calibration_curves/calibration_curves.png"/>
+        <img src="figures/calibration_curves/calibration_curves.png"/>
     </td>
   </tr>
     <tr>
@@ -124,7 +124,7 @@ In the table below, we report the performance metrics for each test set for both
 <table>
   <tr>	
     <td>
-        <img src="images/figures/evaluation_table_full.png"/>
+        <img src="figures/evaluation_table_full.png"/>
     </td>
   </tr>
     <tr>
