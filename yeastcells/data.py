@@ -175,7 +175,7 @@ def get_gt_yit(seg_path, track_path):
     
     return gt_s, gt_t
 
-def get_pred(output, labels, coordinates):
+def get_pred(output, labels, coordinates, ti=3, start=1):
     '''
     Reformats prediction outputs into 1 array.
     Parameters
@@ -200,6 +200,7 @@ def get_pred(output, labels, coordinates):
     o = list(map(existance_vectors, output))
     pred_s= np.zeros(((len(labels),4))).astype(int)
     cell_num = np.array([], dtype=int)
+    time_min = []
     i=0
     for f in range(len(o)):
         instance = len(o[f])
@@ -207,17 +208,24 @@ def get_pred(output, labels, coordinates):
         cell_num = np.hstack((cell_num,tmp))
         offset=i
         for i in range(offset,instance+offset):
-            pred_s[i,0] = f+1 # Frame_number
+            pred_s[i,0] = f+start # Frame_number
             i+=1
+            time_min.append((f+start-1)*ti)
     pred_s[:,1] = cell_num # Cell_number
     pred_s[:,2] = coordinates[:,2] # Position_X
     pred_s[:,3] = coordinates[:,1] # Position_Y
     pred_t = pred_s.copy()
     pred_t[:,1] = labels
     pred_df = pd.DataFrame(pred_s, columns=[
-        "Frame_number", "Cell_number", "Position_X", "Position_Y"
+        'Frame_number', 'Cell_number', 
+        'Position_X', 'Position_Y'
     ])
-    pred_df["Cell_label"] = labels 
+    pred_df['Cell_label'] = labels 
+    pred_df['Time(min)'] = time_min
+    pred_df = pred_df[[
+        'Frame_number', 'Time(min)', 'Cell_number', 
+        'Cell_label', 'Position_X', 'Position_Y'
+    ]]
     
     return pred_s, pred_t, pred_df
 

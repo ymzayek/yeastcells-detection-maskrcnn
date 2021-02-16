@@ -108,7 +108,7 @@ def get_distance(p1, p2):
     
     return distance
 
-def get_features_df(polygons_inst, labels, pred_df): #make sure polygons include noise
+def add_area_df(polygons_inst, labels, pred_df): #make sure polygons include noise
     pred_features_df = pred_df.copy()
     poly_area =np.zeros((len(labels)),dtype=float)
     n=0
@@ -116,35 +116,6 @@ def get_features_df(polygons_inst, labels, pred_df): #make sure polygons include
         poly_area[n] = polygons_inst[lab][frame-1].area
         n+=1
     pred_features_df['Area'] = poly_area  
-    
-    area_std = np.zeros((len(labels)),dtype=float)
-    n=0
-    for l in pred_features_df.Cell_label:
-        if l is -1:
-            area_std[n] = 0
-        else:    
-            area_std[n] = np.std(
-                pred_features_df.loc[pred_features_df['Cell_label'] == l, 'Area']
-            )
-        n+=1
-    pred_features_df['Area_stdev'] = poly_area
-    
-    position_std = np.zeros((len(labels)),dtype=float)
-    n=0
-    for l in pred_features_df.Cell_label:
-        if l is -1:
-            position_std[n] = 0
-        else:    
-            points_xy = np.array(
-                pred_features_df.loc[
-                pred_features_df['Cell_label'] == l, ('Position_X', 'Position_Y')
-            ])
-            dist_xy = []
-            for i in range(len(points_xy)-1):
-                dist_xy.append(get_distance(points_xy[i], points_xy[i+1]))
-            position_std[n] = np.std(dist_xy)
-        n+=1  
-    pred_features_df['Position_stdev'] = poly_area
         
     return pred_features_df 
 
@@ -165,8 +136,36 @@ def get_average_growth_rate(polygons_clust, labels, output):
         for n in range(offset_,instances+offset_):
             offset_frames[n] = f+1
             n+=1
-    agr = np.zeros((len(polygons_clust)),dtype=float)
+    agr = np.zeros((len(polygons_clust),2),dtype=float)
     for l in range(0,max(labels)+1): 
         end = max(offset_frames[labels==l])
         start = min(offset_frames[labels==l])
-        agr[l] = ((polygons_clust[l][end-1].area/polygons_clust[l][start-1].area)**(1/len(output))) - 1
+        agr[l,0] = l
+        agr[l,1] = ((polygons_clust[l][end-1].area/polygons_clust[l][start-1].area)**(1/len(output))) - 1
+
+    return agr
+        
+def get_area_std(polygons_clust, labels, pred_features_df):    
+    area_std = np.zeros((len(polygons_clust),2),dtype=float)
+    for l in range(0,max(labels)+1):
+        area_std[l,0] = l
+        area_std[l,1] = np.std(
+            pred_features_df.loc[pred_features_df['Cell_label'] == l, 'Area']
+        )
+    
+    return area_std
+    
+def get_position_std(polygons_clust, labels, pred_features_df):     
+    position_std = np.zeros((len(polygons_clust),2),dtype=float)
+    for l in range(0,max(labels)+1):  
+        points_xy = np.array(
+            pred_features_df.loc[
+            pred_features_df['Cell_label'] == l, ('Position_X', 'Position_Y')
+        ])
+        dist_xy = []
+        for i in range(len(points_xy)-1):
+            dist_xy.append(get_distance(points_xy[i], points_xy[i+1]))
+        position_std[l,0] = l
+        position_std[l,1] = np.std(dist_xy) 
+    
+    return position_std
