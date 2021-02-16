@@ -4,6 +4,7 @@ import cv2
 from collections import Counter
 from shapely.geometry import Polygon, Point
 import math
+from .clustering import existance_vectors
 
 def extract_contours(output):
     outputs = output
@@ -38,9 +39,10 @@ def get_centroids(coordinates, labels):
     return centroids
 
 def get_instance_numbers(output):
+    o = list(map(existance_vectors, output))
     inst_num = np.array([], dtype=int)
-    for f in range(len(output)):
-        instance = len(output[f])
+    for f in range(len(o)):
+        instance = len(o[f])
         tmp = np.arange(instance)
         inst_num = np.hstack((inst_num,tmp))
     

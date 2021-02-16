@@ -115,17 +115,21 @@ def show_animation(scene, title='', delay = 500):
     
     return movie
 
-def plot_area_profile(polygons, label=0, ax=None, title=None):
-    area = np.zeros((len(polygons[label])))
-    for i,p in enumerate(polygons[label]):
-        area[i] = polygons[label][p].area
+def plot_area_profiles(polygons, ti=3, label=[0], ax=None, title=None):
     if ax is None:
         fig = plt.figure()  
         fig.suptitle(title)
+    for label in label_list:
+        time_min = []
+        for t in polygons[label].keys():
+            time_min.append(t*ti)
+        area = np.zeros((len(polygons[label])))
+        for i,p in enumerate(polygons[label]):
+            area[i] = polygons[label][p].area
         ax = fig.add_subplot(111)
-        ax.set_xlabel('Time')
+        ax.set_xlabel('Time (min)')
         ax.set_ylabel('Area')
-        ax.plot(area)
+        ax.scatter(time_min, area)
         
     return ax  
 
@@ -142,7 +146,7 @@ def plot_polygon_mask(
         fig.suptitle(title)
         ax = plt.imshow(frames[frame])
         ax = plt.imshow(mask, alpha=0.1)
-        plt.axis('off')
+        #plt.axis('off')
         x, y = polygons[label][frame].exterior.coords.xy
         ax = plt.plot(x, y)
         

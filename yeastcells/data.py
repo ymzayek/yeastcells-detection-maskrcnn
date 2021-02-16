@@ -4,6 +4,7 @@ import pandas as pd
 from skimage.io import imread
 from PIL import Image
 import os
+from .clustering import existance_vectors
 
 def load_data(path, ff = '.tif'):
     '''
@@ -196,11 +197,12 @@ def get_pred(output, labels, coordinates):
         Combined segmentation and tracking results
         -1 labels considered as noise for tracking.         
     '''
+    o = list(map(existance_vectors, output))
     pred_s= np.zeros(((len(labels),4))).astype(int)
     cell_num = np.array([], dtype=int)
     i=0
-    for f in range(len(output)):
-        instance = len(output[f])
+    for f in range(len(o)):
+        instance = len(o[f])
         tmp = np.arange(instance)
         cell_num = np.hstack((cell_num,tmp))
         offset=i
