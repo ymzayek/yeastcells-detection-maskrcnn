@@ -49,7 +49,7 @@ def get_instance_numbers(output):
     coordinates = np.array([
         (t, ) + tuple(map(np.mean, np.where(mask)))
         for t, o in enumerate(output)
-        for mask in output['instances'].pred_masks.to('cpu')
+        for mask in o['instances'].pred_masks.to('cpu')
     ])    
         
     return inst_num, coordinates    
@@ -168,3 +168,10 @@ def get_features_df(polygons_inst, labels, pred_df): #make sure polygons include
         
     return pred_features_df 
 
+def get_masks(output):
+    masks = [
+        m for i in output for m in np.array(
+        i['instances'].pred_masks.to('cpu'), dtype=int
+    )]
+    
+    return masks

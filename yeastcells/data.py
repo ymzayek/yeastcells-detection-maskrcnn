@@ -42,7 +42,7 @@ def read_image(fn, single_im=False):
     image = imread(fn)  
     if image.ndim==4 and single_im==False:  
         return (
-            (image / 65535 * 255)[:, ..., :1] * [[[1, 1, 1]]]
+            (image / image.max() * 255)[:, ..., :1] * [[[1, 1, 1]]]
         ).astype(np.uint8)
     if image.ndim==3 and single_im==False:  
         return (

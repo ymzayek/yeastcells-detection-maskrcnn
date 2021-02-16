@@ -128,4 +128,22 @@ def plot_area_profile(polygons, label=0, ax=None, title=None):
         ax.plot(area)
         
     return ax  
-    
+
+def plot_polygon_mask(
+        masks, labels, output, frames, polygons, 
+        label=0, frame=0, ax=None, title=None
+    ):
+    labels_ = group(labels, output)
+    mask = [masks[i] for i in np.where(labels==label)[0]]
+    if label in labels_[frame]:
+        mask = mask[frame]
+    if ax is None:
+        fig = plt.figure()
+        fig.suptitle(title)
+        ax = plt.imshow(frames[frame])
+        ax = plt.imshow(mask, alpha=0.1)
+        plt.axis('off')
+        x, y = polygons[label][frame].exterior.coords.xy
+        ax = plt.plot(x, y)
+        
+    return ax    
