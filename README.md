@@ -63,9 +63,9 @@ The example pipeline gives segmentation and tracking results of brightfield time
 
 You can visualize the segmentations and tracks in a movie using `visualize.create_scene` and `visualize.show_animation`. Further, you can use `visualize.select_cell` to select a particular cell by label and zoom in on it to observe it better in the movie. The movie displayed with default options gives each cell a unique color that stays the same throughout the movie if the cell is tracked correctly. You also have the options to display the label number by setting the parameter `labelnum` to `True`.
 
-**Feature extraction**
+**Infomration and feature extraction**
 
-This pipeline allows you to extract several features about the detected yeast cells in the time-series. The `features.group` function groups the segmentations by frame. You can use the `features.get_seg_track` function to find the number of segmentations and number of tracked cells (in total or by frame). The `features.extract_contours` function gives the contour points [x,y] for each segmentation. The `features.polygons_per_cluster` function uses the [Shapely](https://shapely.readthedocs.io/en/stable/manual.html) polygon class to output polygons for each label. The polygon class can be used to extract the area of the polygon and plot it over time.
+This pipeline allows you to extract infomration about the detected yeast cells in the time-series. The `features.group` function groups the segmentations by frame. You can use the `features.get_seg_track` function to find the number of segmentations and number of tracked cells (in total or by frame). The `features.extract_contours` function gives the contour points [x,y] for each segmentation. The `features.polygons_per_cluster` function uses the [Shapely](https://shapely.readthedocs.io/en/stable/manual.html) polygon class to output polygons for each label. The polygon class can be used to extract the area in pixels of the polygon and plot it over time.
 
 <table>
   <tr>	
@@ -75,13 +75,26 @@ This pipeline allows you to extract several features about the detected yeast ce
   </tr>
   <tr>	
     <td>
-        <img src="figures/.png"/>
+        <img src="figures/Test_Images_Movie1_Frame40_cell0.png"/>
     </td>
   </tr>
     <tr>
     <td>Figure 4. The top image shows a zoomed in brightfield image with the mask and polygon boundery overlayed on a single segmented instance. The bottom graph shows the area profile of the selected yeast cell.</td>
   </tr>
 </table>
+
+<table>
+  <tr>	
+    <td>
+        <img src="figures/comparison_mother_daughter.png"/>
+    </td>
+  </tr>
+    <tr>
+    <td>Figure. Comparison of area profiles between mother (blue) and daughter (orange) cells.</td>
+  </tr>
+</table>
+
+Further, you can get the average growth rate and the standard deviation of the area and position of the tracked cells. These features can possibly be used in future work for false positive removal and extracting lineages.
 
 # Evaluation
 
