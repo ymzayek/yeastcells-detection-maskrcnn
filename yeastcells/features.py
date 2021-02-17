@@ -108,14 +108,14 @@ def get_distance(p1, p2):
     
     return distance
 
-def add_area_df(polygons_inst, labels, pred_df): #make sure polygons include noise
+def add_area_df(polygons_inst, labels, pred_df, start=0): #make sure polygons include noise
     pred_features_df = pred_df.copy()
     poly_area =np.zeros((len(labels)),dtype=float)
     n=0
     for lab, frame in zip(pred_features_df.Cell_label, pred_features_df.Frame_number):
-        poly_area[n] = polygons_inst[lab][frame-1].area
+        poly_area[n] = polygons_inst[lab][frame-start].area
         n+=1
-    pred_features_df['Area'] = poly_area  
+    pred_features_df['Area(pxl)'] = poly_area  
         
     return pred_features_df 
 
@@ -128,10 +128,11 @@ def get_masks(output):
     return masks
 
 def get_average_growth_rate(polygons_clust, labels, output):
+    o = list(map(existance_vectors, output))
     offset_frames = np.zeros((len(labels)),dtype=int)
     n=0
-    for f in range(len(output)):
-        instances = len(output[f])
+    for f in range(len(o)):
+        instances = len(o[f])
         offset_=n
         for n in range(offset_,instances+offset_):
             offset_frames[n] = f+1
