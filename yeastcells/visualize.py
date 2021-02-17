@@ -129,7 +129,7 @@ def plot_area_profiles(polygons, ti=3, label_list=[0], ax=None, title=None):
         ax = fig.add_subplot(111)
         ax.set_xlabel('Time (min)')
         ax.set_ylabel('Area')
-        ax.scatter(time_min, area)
+        ax.scatter(time_min, area, s=1)
         ax.legend(label_list, loc="upper left")
         
     return ax  

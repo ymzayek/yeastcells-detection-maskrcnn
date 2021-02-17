@@ -61,14 +61,14 @@ def group(l, outputs):
         for a, b in zip(boundaries, boundaries[1:])
     ]
 
-def get_seg_track(labels, output, frame = None):
+def get_seg_track(labels, output, frame=None, start=0):
     if frame is None:
         segs = print('The number of segmentations is ' + str(len(labels)))
         tracks = print('The number of tracked cells is ' + str(len(np.unique(labels[labels>=0]))))
     else:
         grouped = group(labels, output) # group labels by frame
-        segs = print(f'The number of segmentations in frame {frame} is ' + str(len(grouped[frame-1])))
-        tracks = print(f'The number of tracked cells in frame {frame} is ' + str(len(np.unique(grouped[frame-1][grouped[frame-1]>=0]))))
+        segs = print(f'The number of segmentations in frame {frame+start} is ' + str(len(grouped[frame-1])))
+        tracks = print(f'The number of tracked cells in frame {frame+start} is ' + str(len(np.unique(grouped[frame-1][grouped[frame-1]>=0]))))
     
     return segs, tracks
 
@@ -151,7 +151,7 @@ def get_area_std(polygons_clust, labels, pred_features_df):
     for l in range(0,max(labels)+1):
         area_std[l,0] = l
         area_std[l,1] = np.std(
-            pred_features_df.loc[pred_features_df['Cell_label'] == l, 'Area']
+            pred_features_df.loc[pred_features_df['Cell_label'] == l, 'Area(pxl)']
         )
     
     return area_std
