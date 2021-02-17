@@ -65,7 +65,7 @@ You can visualize the segmentations and tracks in a movie using `visualize.creat
 
 **Infomration and feature extraction**
 
-This pipeline allows you to extract infomration about the detected yeast cells in the time-series. The `features.group` function groups the segmentations by frame. You can use the `features.get_seg_track` function to find the number of segmentations and number of tracked cells (in total or by frame). The `features.extract_contours` function gives the contour points [x,y] for each segmentation. The `features.polygons_per_cluster` function uses the [Shapely](https://shapely.readthedocs.io/en/stable/manual.html) polygon class to output polygons for each label. The polygon class can be used to extract the area in pixels of the polygon and plot it over time.
+This pipeline allows you to extract infomration about the detected yeast cells in the time-series. The `features.group` function groups the segmentations by frame. You can use the `features.get_seg_track` function to find the number of segmentations and number of tracked cells (in total or by frame). The `features.extract_contours` function gives the contour points [x,y] for each segmentation. The `features.polygons_per_cluster` function uses the [Shapely](https://shapely.readthedocs.io/en/stable/manual.html) polygon class to output polygons for each label. The polygon class can be used to extract the area in pixels of the polygon and plot it over time. The masks for all segmented cell can be extracted using the function `features.get_masks`. The polygon boundry and mask of a particular cell can be plotted over the brightfield image using `visualize.plot_polygon_mask` as shown in the figure below.
 
 <table>
   <tr>	
@@ -94,7 +94,7 @@ This pipeline allows you to extract infomration about the detected yeast cells i
   </tr>
 </table>
 
-Further, you can get the average growth rate and the standard deviation of the area and position of the tracked cells. These features can possibly be used in future work for false positive removal and extracting lineages.
+Further, you can get the average growth rate and the standard deviation of the area and position of the tracked cells. These features can possibly be used in future work for false positive removal and differentiating between mother and daughter cells.
 
 # Evaluation
 
