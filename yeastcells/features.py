@@ -61,14 +61,14 @@ def group(l, outputs):
         for a, b in zip(boundaries, boundaries[1:])
     ]
 
-def get_seg_track(labels, output, frame=None, start=0):
+def get_seg_track(labels, output, frame=None):
     if frame is None:
         segs = print('The number of segmentations is ' + str(len(labels)))
         tracks = print('The number of tracked cells is ' + str(len(np.unique(labels[labels>=0]))))
     else:
         grouped = group(labels, output) # group labels by frame
-        segs = print(f'The number of segmentations in frame {frame+start} is ' + str(len(grouped[frame-1])))
-        tracks = print(f'The number of tracked cells in frame {frame+start} is ' + str(len(np.unique(grouped[frame-1][grouped[frame-1]>=0]))))
+        segs = print(f'The number of segmentations in frame {frame} is ' + str(len(grouped[frame-1])))
+        tracks = print(f'The number of tracked cells in frame {frame} is ' + str(len(np.unique(grouped[frame-1][grouped[frame-1]>=0]))))
     
     return segs, tracks
 
@@ -108,17 +108,6 @@ def get_distance(p1, p2):
     
     return distance
 
-def add_area_df(polygons_inst, labels, pred_df, start=0): #make sure polygons include noise
-    pred_features_df = pred_df.copy()
-    poly_area =np.zeros((len(labels)),dtype=float)
-    n=0
-    for lab, frame in zip(pred_features_df.Cell_label, pred_features_df.Frame_number):
-        poly_area[n] = polygons_inst[lab][frame-start].area
-        n+=1
-    pred_features_df['Area(pxl)'] = poly_area  
-        
-    return pred_features_df 
-
 def get_masks(output):
     masks = [
         m for i in output for m in np.array(
@@ -126,6 +115,20 @@ def get_masks(output):
     )]
     
     return masks
+
+def get_area(polygons_inst, masks, labels, pred_df, start=1): #make sure polygons include noise
+    pred_features_df = pred_df.copy()
+    poly_area =np.zeros((len(labels)),dtype=float)
+    mask_area =np.zeros((len(labels)),dtype=float)
+    n=0
+    for lab, frame in zip(pred_features_df.Cell_label, pred_features_df.Frame_number):
+        poly_area[n] = polygons_inst[lab][frame-start].area
+        mask_area[n] = masks[n].sum()
+        n+=1
+    pred_features_df['Poly_Area(pxl)'] = poly_area  
+    pred_features_df['Mask_Area(pxl)'] = mask_area  
+        
+    return pred_features_df 
 
 def get_average_growth_rate(polygons_clust, labels, output):
     o = list(map(existance_vectors, output))

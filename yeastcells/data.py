@@ -26,7 +26,7 @@ def load_data(path, ff = '.tif'):
     
     return fns
 
-def read_image(fn, single_im=False, shape=1):
+def read_image(fn, single_im=False, shape=1, start_frame=1):
     '''
     Reads images into an array with correct shape for input into detectron2 
     predictor.
@@ -40,10 +40,12 @@ def read_image(fn, single_im=False, shape=1):
         A 4-dimensional array (frames, length, width, channels).
     ''' 
     if shape==1: 
-        image = imread(fn) 
+        image = imread(fn)
+        image = image[start_frame-1:]
     elif shape==2: 
         image = imread(fn) 
         image = np.rollaxis(image,1,4)
+        image = image[start_frame-1:]
     if image.ndim==4 and single_im==False:  
         return (
             (image / image.max() * 255)[:, ..., :1] * [[[1, 1, 1]]]

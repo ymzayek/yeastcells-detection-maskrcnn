@@ -136,7 +136,7 @@ def plot_area_profiles(polygons, ti=3, label_list=[0], ax=None, title=None):
 
 def plot_polygon_mask(
         masks, labels, output, frames, polygons, 
-        label_list=[0], frame=0, ax=None, title=None
+        label_list=[0], frame=0, start=0, ax=None, title=None
     ):
     if ax is None:
         fig = plt.figure()
