@@ -154,7 +154,7 @@ def get_area_std(polygons_clust, labels, pred_features_df):
     for l in range(0,max(labels)+1):
         area_std[l,0] = l
         area_std[l,1] = np.std(
-            pred_features_df.loc[pred_features_df['Cell_label'] == l, 'Area(pxl)']
+            pred_features_df.loc[pred_features_df['Cell_label'] == l, 'Poly_Area(pxl)']
         )
     
     return area_std

@@ -26,7 +26,7 @@ def load_data(path, ff = '.tif'):
     
     return fns
 
-def read_image(fn, single_im=False, shape=1, start_frame=1):
+def read_image(fn, single_im=False, shape=1, start_frame=1, channel=1, grayscale=True):
     '''
     Reads images into an array with correct shape for input into detectron2 
     predictor.
@@ -47,18 +47,33 @@ def read_image(fn, single_im=False, shape=1, start_frame=1):
         image = np.rollaxis(image,1,4)
         image = image[start_frame-1:]
     if image.ndim==4 and single_im==False:  
-        return (
-            (image / image.max() * 255)[:, ..., :1] * [[[1, 1, 1]]]
-        ).astype(np.uint8)
+        if grayscale==True:
+            return (
+                (image / image.max() * 255)[:, ..., :1] * [[[1, 1, 1]]]
+            ).astype(np.uint8)
+        else:
+            return (
+                image[:, ..., :1] * [[[1, 1, 1]]]
+            ).astype(np.uint8)
     elif image.ndim==3 and single_im==False:  
-        return (
-            (image / image.max() * 255)[:, ..., None] * [[[1, 1, 1]]]
-        ).astype(np.uint8)
+        if grayscale==True:
+            return (
+                (image / image.max() * 255)[:, ..., None] * [[[1, 1, 1]]]
+            ).astype(np.uint8)
+        else:
+            return (
+                image[:, ..., None] * [[[1, 1, 1]]]
+            ).astype(np.uint8)            
     elif image.ndim==3 and single_im==True:  
-      return (
-        (image / image.max() * 255)[None, ..., :1] * [[[1, 1, 1]]]
-      ).astype(np.uint8) 
-    
+        if grayscale==True:
+            return (
+              (image / image.max() * 255)[None, ..., :1] * [[[1, 1, 1]]]
+            ).astype(np.uint8) 
+        else:
+            return (
+                image[None, ..., :1] * [[[1, 1, 1]]]
+            ).astype(np.uint8) 
+        
 def read_images_cat(fns): 
     '''
     For reading multiple single-image tiffs and concatenating them.
