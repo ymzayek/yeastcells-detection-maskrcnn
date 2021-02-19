@@ -49,11 +49,11 @@ def read_image(fn, single_im=False, shape=1, start_frame=1, channel=1, grayscale
     if image.ndim==4 and single_im==False:  
         if grayscale==True:
             return (
-                (image / image.max() * 255)[:, ..., :1] * [[[1, 1, 1]]]
+                (image / image.max() * 255)[:, ..., channel-1:channel] * [[[1, 1, 1]]]
             ).astype(np.uint8)
         else:
             return (
-                image[:, ..., :1] * [[[1, 1, 1]]]
+                image[:, ..., channel-1:channel] * [[[1, 1, 1]]]
             ).astype(np.uint8)
     elif image.ndim==3 and single_im==False:  
         if grayscale==True:
@@ -67,11 +67,11 @@ def read_image(fn, single_im=False, shape=1, start_frame=1, channel=1, grayscale
     elif image.ndim==3 and single_im==True:  
         if grayscale==True:
             return (
-              (image / image.max() * 255)[None, ..., :1] * [[[1, 1, 1]]]
+              (image / image.max() * 255)[None, ..., channel-1:channel] * [[[1, 1, 1]]]
             ).astype(np.uint8) 
         else:
             return (
-                image[None, ..., :1] * [[[1, 1, 1]]]
+                image[None, ..., channel-1:channel] * [[[1, 1, 1]]]
             ).astype(np.uint8) 
         
 def read_images_cat(fns): 
