@@ -106,11 +106,20 @@ def group(l, outputs):
 def get_seg_track(labels, output, frame=None):
     if frame is None:
         segs = print('The number of segmentations is ' + str(len(labels)))
-        tracks = print('The number of tracked cells is ' + str(len(np.unique(labels[labels>=0]))))
+        tracks = print(
+            'The number of tracked cells is ' 
+            + str(len(np.unique(labels[labels>=0])))
+        )
     else:
         grouped = group(labels, output) # group labels by frame
-        segs = print(f'The number of segmentations in frame {frame} is ' + str(len(grouped[frame-1])))
-        tracks = print(f'The number of tracked cells in frame {frame} is ' + str(len(np.unique(grouped[frame-1][grouped[frame-1]>=0]))))
+        segs = print(
+            f'The number of segmentations in frame {frame} is ' 
+            + str(len(grouped[frame-1]))
+        )
+        tracks = print(
+            f'The number of tracked cells in frame {frame} is ' 
+            + str(len(np.unique(grouped[frame-1][grouped[frame-1]>=0])))
+        )
     
     return segs, tracks
 
@@ -171,13 +180,13 @@ def get_frame_offsets(labels, output):
     
     return frame_offsets
 
-def get_area(polygons_inst, masks, labels, output, start=1): #make sure polygons include noise
+def get_area(polygons_inst, masks, labels, output): #make sure polygons include noise
     frame_offsets = get_frame_offsets(labels, output)    
     poly_area =np.zeros((len(labels)),dtype=float)
     mask_area =np.zeros((len(labels)),dtype=float)
     n=0
     for lab, frame in zip(labels, frame_offsets):
-        poly_area[n] = polygons_inst[lab][frame-start].area
+        poly_area[n] = polygons_inst[lab][frame-1].area
         mask_area[n] = masks[n].sum()
         n+=1
         
@@ -190,7 +199,10 @@ def get_average_growth_rate(polygons_clust, labels, output):
         end = max(frame_offsets[labels==l])
         start = min(frame_offsets[labels==l])
         agr[l,0] = l
-        agr[l,1] = ((polygons_clust[l][end-1].area/polygons_clust[l][start-1].area)**(1/len(output))) - 1
+        agr[l,1] = (
+            (polygons_clust[l][end-1].area/polygons_clust[l][start-1].area
+             )**(1/len(output))
+        ) - 1
 
     return agr
         
@@ -199,7 +211,8 @@ def get_area_std(polygons_clust, labels, pred_features_df):
     for l in range(0,max(labels)+1):
         area_std[l,0] = l
         area_std[l,1] = np.std(
-            pred_features_df.loc[pred_features_df['Cell_label'] == l, 'Poly_Area(pxl)']
+            pred_features_df.loc[
+            pred_features_df['Cell_label'] == l, 'Poly_Area(pxl)']
         )
     
     return area_std
