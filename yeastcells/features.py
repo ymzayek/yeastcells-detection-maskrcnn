@@ -7,6 +7,18 @@ import math
 from .clustering import existance_vectors
 
 def extract_contours(output):
+    '''
+    Parameters
+    ----------
+    output : dict
+        Predictor output from the detecron2 model.
+    Returns
+    -------
+    x : TYPE
+        The x coordinates of the contour points for each segmented cell.
+    y : TYPE
+        The y coordinates of the contour points for each segmented cell.
+    '''
     outputs = output
     x, y = [], []
     for o in outputs:
@@ -31,6 +43,19 @@ def extract_contours(output):
     return x, y
 
 def get_centroids(coordinates, labels):
+    '''
+    Parameters
+    ----------
+    coordinates : ndarray
+        Coordinates of centroid of individual instances with 2 dimensions
+        (labels, ([time, Y, X])).
+    labels : TYPE
+        Tracking labels of individual segmented cells.
+    Returns
+    -------
+    centroids : TYPE
+        The coordinates of the centroids of the segmented cells.
+    '''
     centroids = np.zeros(((len(labels),3))).astype(int)    
     centroids[:,0] = labels
     centroids[:,1] = coordinates[:,2] #x
@@ -39,6 +64,23 @@ def get_centroids(coordinates, labels):
     return centroids
 
 def get_instance_numbers(output):
+    '''
+    Parameters
+    ----------
+    output : dict
+        Predictor output from the detecron2 model.
+    Returns
+    -------
+    inst_num : TYPE
+        Each segmented cell gets a unique number per frame. 
+        This is not the same as the tracking labels since 
+        the numbers are unique within a frame but are not 
+        consistent for one cell across frames. It serves
+        more as a count of cells in each frame.
+    coordinates : ndarray
+        Coordinates of centroid of individual instances with 2 dimensions
+        (labels, ([time, Y, X])).
+    '''
     o = list(map(existance_vectors, output))
     inst_num = np.array([], dtype=int)
     for f in range(len(o)):
@@ -116,34 +158,37 @@ def get_masks(output):
     
     return masks
 
-def get_area(polygons_inst, masks, labels, pred_df, start=1): #make sure polygons include noise
-    pred_features_df = pred_df.copy()
-    poly_area =np.zeros((len(labels)),dtype=float)
-    mask_area =np.zeros((len(labels)),dtype=float)
-    n=0
-    for lab, frame in zip(pred_features_df.Cell_label, pred_features_df.Frame_number):
-        poly_area[n] = polygons_inst[lab][frame-start].area
-        mask_area[n] = masks[n].sum()
-        n+=1
-    pred_features_df['Poly_Area(pxl)'] = poly_area  
-    pred_features_df['Mask_Area(pxl)'] = mask_area  
-        
-    return pred_features_df 
-
-def get_average_growth_rate(polygons_clust, labels, output):
+def get_frame_offsets(labels, output):
     o = list(map(existance_vectors, output))
-    offset_frames = np.zeros((len(labels)),dtype=int)
+    frame_offsets = np.zeros((len(labels)),dtype=int)
     n=0
     for f in range(len(o)):
         instances = len(o[f])
         offset_=n
         for n in range(offset_,instances+offset_):
-            offset_frames[n] = f+1
+            frame_offsets[n] = f+1
             n+=1
+    
+    return frame_offsets
+
+def get_area(polygons_inst, masks, labels, output, start=1): #make sure polygons include noise
+    frame_offsets = get_frame_offsets(labels, output)    
+    poly_area =np.zeros((len(labels)),dtype=float)
+    mask_area =np.zeros((len(labels)),dtype=float)
+    n=0
+    for lab, frame in zip(labels, frame_offsets):
+        poly_area[n] = polygons_inst[lab][frame-start].area
+        mask_area[n] = masks[n].sum()
+        n+=1
+        
+    return poly_area,  mask_area
+
+def get_average_growth_rate(polygons_clust, labels, output):
+    frame_offsets = get_frame_offsets(labels, output)
     agr = np.zeros((len(polygons_clust),2),dtype=float)
     for l in range(0,max(labels)+1): 
-        end = max(offset_frames[labels==l])
-        start = min(offset_frames[labels==l])
+        end = max(frame_offsets[labels==l])
+        start = min(frame_offsets[labels==l])
         agr[l,0] = l
         agr[l,1] = ((polygons_clust[l][end-1].area/polygons_clust[l][start-1].area)**(1/len(output))) - 1
 
@@ -173,3 +218,12 @@ def get_position_std(polygons_clust, labels, pred_features_df):
         position_std[l,1] = np.std(dist_xy) 
     
     return position_std
+
+def get_pixel_intensity(masks, output, im):
+    masks_ = group(masks, output)
+    pi = [
+        np.sum(im[frame][masks_[frame][i]==1]) 
+        for frame in range(len(im)) for i in range(len(masks_[frame]))
+    ]
+    
+    return pi

@@ -10,6 +10,31 @@ def plot_paths(
         labels, coordinates, xlim=(0, 512), ylim=(0, 512), 
         ax=None, style={}, subset=None, title=None
     ):
+    '''
+    Parameters
+    ----------
+    labels : ? ym
+        Tracking labels of individual segmented cells.
+    coordinates : ndarray
+        Coordinates of centroid of individual instances with 2 dimensions
+        (labels, ([time, Y, X])).
+    xlim : tuple, optional
+        X-axis scale. The default is (0, 512).
+    ylim : tuple, optional
+        Y-axis scale. The default is (0, 512).
+    ax : TYPE, optional
+        DESCRIPTION. The default is None.
+    style : TYPE, optional
+        DESCRIPTION. The default is {}.
+    subset : TYPE, optional
+        Plot only a subset of labels. The default is None.
+    title : str, optional
+        Title for plot. The default is None.
+    Returns
+    -------
+    ax : TYPE
+        DESCRIPTION.
+    '''
     if ax is None:
         fig = plt.figure()
         fig.suptitle(title)
@@ -35,6 +60,39 @@ def create_scene(
         frames, output, labels, contours, subset=None, thickness=1, 
         color=None, framenum=False, labelnum=False
     ):
+    '''
+    Parameters
+    ----------
+    frames : TYPE
+        Time-series images.
+    output : dict
+        Predictor output from the detecron2 model.
+    labels : TYPE
+        Tracking labels of individual segmented cells.
+    contours : TYPE
+        Cell boundary points. Contours[0] gives the x coordinates
+        and contours[1] gives the y coordinates.
+    subset : TYPE, optional
+        Plot only a subset of labels. The default is None.
+    thickness : int, optional
+        Thickness of cell boundary line that is drawn on the image. 
+        The default is 1.
+    color : TYPE, optional
+        Color of cell boundary lines. The default is None. 
+        If default is chosen, different and random colors are 
+        assigned to each cell.
+    framenum : bool, optional
+        If True, the frame number will be displayed in the 
+        upper left hand corner. The default is False.
+    labelnum : bool, optional
+        If True, the label number of each segmented cell will 
+        be displayed in addition to the colored boundary line. 
+        The default is False.
+    Returns
+    -------
+    canvas : TYPE
+        DESCRIPTION.
+    '''
     canvas = frames.copy()
   
     colors = plt.get_cmap('hsv')(np.linspace(0, 1, labels.max()+1))
@@ -91,6 +149,29 @@ def create_scene(
     return canvas
 
 def select_cell(scene, coordinates, labels, w=40, l=0):
+    '''
+    Parameters
+    ----------
+    scene : TYPE
+        DESCRIPTION.
+    coordinates : ndarray
+        Coordinates of centroid of individual instances with 2 dimensions
+        (labels, ([time, Y, X])).
+    labels : TYPE
+        Tracking labels of individual segmented cells.
+    w : int, optional
+        Determines the zoom magnitude based on the cell in focus. 
+        The default is 40.
+    l : int, optional
+        The label of the cell that you want to center and zoom on. 
+        The default is 0.
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+    label : int
+        The label of the cell that you center and zoom on. #remove this return
+    '''
     label = l
     z, y, x = coordinates[labels == label].T 
     xmin, xmax = int(max(0, x.mean() - w)), int(x.mean() + w)
@@ -99,7 +180,21 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
 
     return scene[:,sub[0],sub[1]], label
 
-def show_animation(scene, title='', delay = 500):
+def show_animation(scene, title=None, delay = 500):
+    '''
+    Parameters
+    ----------
+    scene : TYPE
+        DESCRIPTION.
+    title : str, optional
+        Set figure title. The default is None.
+    delay : TYPE, optional
+        DESCRIPTION. The default is 500.
+    Returns
+    -------
+    movie : TYPE
+        DESCRIPTION.
+    '''
     fig = plt.figure(figsize=(5, 5))
     fig.suptitle(title)
     im = plt.imshow(scene[0])
@@ -116,6 +211,26 @@ def show_animation(scene, title='', delay = 500):
     return movie
 
 def plot_area_profiles(polygons, ti=3, label_list=[0], ax=None, title=None):
+    '''
+    Parameters
+    ----------
+    polygons : TYPE
+        DESCRIPTION.
+    ti : int, optional
+        Set frame rate in minutes to calculate time. 
+        The default is 3.
+    label_list : list, optional
+        List of labels for which you want to plot the area over time. 
+        The default is [0].
+    ax : TYPE, optional
+        DESCRIPTION. The default is None.
+    title : str, optional
+        Set figure title. The default is None.
+    Returns
+    -------
+    ax : TYPE
+        DESCRIPTION.
+    '''
     if ax is None:
         fig = plt.figure()  
         fig.suptitle(title)
@@ -136,8 +251,36 @@ def plot_area_profiles(polygons, ti=3, label_list=[0], ax=None, title=None):
 
 def plot_polygon_mask(
         masks, labels, output, frames, polygons, 
-        label_list=[0], frame=0, start=0, ax=None, title=None
+        label_list=[0], frame=0, ax=None, title=None
     ):
+    '''
+    Parameters
+    ----------
+    masks : TYPE
+        DESCRIPTION.
+    labels : TYPE
+        Tracking labels of individual segmented cells.
+    output : dict
+        Predictor output from the detecron2 model.
+    frames : ndarray
+        A 4-dimensional array of the time-series images
+        (frames, length, width, channels).
+    polygons : TYPE
+        DESCRIPTION.
+    label_list : list, optional
+        List of labels for which you want to plot the area over time. 
+        The default is [0].
+    frame : int, optional
+        Select the frame that you would like to plot. The default is 0.
+    ax : TYPE, optional
+        DESCRIPTION. The default is None.
+    title : str, optional
+        Set figure title. The default is None.
+    Returns
+    -------
+    ax : TYPE
+        DESCRIPTION.
+    '''
     if ax is None:
         fig = plt.figure()
         fig.suptitle(title)

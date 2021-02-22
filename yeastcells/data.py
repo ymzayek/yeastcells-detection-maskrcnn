@@ -200,9 +200,9 @@ def get_pred(output, labels, coordinates, ti=3, start=1):
     output : dict
         Predictor output from the detecron2 model.
     labels : ndarray
-        Tracking labels of individual instances.    
+        Tracking labels of individual segmented cells.    
     coordinates : ndarray
-        Coordinates of centroid of individual instances with 2 dimensions
+        Coordinates of centroid of individual cells with 2 dimensions
         (labels, ([time, Y, X])).        
     Returns
     -------
