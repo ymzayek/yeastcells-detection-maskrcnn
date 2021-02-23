@@ -31,11 +31,11 @@ The example pipeline gives segmentation and tracking results of brightfield time
 <table>
   <tr>	
     <td>
-        <img src="figures/segmentations/seg_examples.png"/>
+        <img src="figures/segmentations/seg_examples_corrected.png"/>
     </td>
   </tr>
     <tr>
-    <td>Figure 2. Example of input brightfield images and their detections. Detected yeast cells are highlighted by a purple border. A) shows the segmentations in one frame of a time-series of agarpad experiments, B) shows segmentations in microfluidic experiments and C) shows segmentations in an experiment with mutants.</td>
+    <td>Figure 1. Example of input brightfield images and their detections. Detected yeast cells are highlighted by a purple border. A) shows the segmentations in one frame of a time-series of agarpad experiments, B) shows segmentations in microfluidic experiments and C) shows segmentations in an experiment with mutants.</td>
   </tr>
 </table>
 
@@ -47,16 +47,16 @@ The example pipeline gives segmentation and tracking results of brightfield time
 <table>
   <tr>	
     <td>
-        <img src="figures/output_xy01_animation.gif"/>
+        <img src="figures/gifs/output_xy01_animation.gif"/>
     </td>
   </tr>
     <tr>	
     <td>
-        <img src="figures/Movie1_frame40_.gif"/>
+        <img src="figures/gifs/Movie1_frame40_.gif"/>
     </td>
   </tr>
     <tr>
-    <td>Figure 3. Segmented and tracked yeast cells from mask R-CNN. Top movie shows a microfluidic experiment and the botttom movie shows an agarpad experiment. </td>
+    <td>Figure 2. Segmented and tracked yeast cells from mask R-CNN. Top movie shows a microfluidic experiment and the botttom movie shows an agarpad experiment. </td>
   </tr>
 </table>
 
@@ -70,31 +70,42 @@ This pipeline allows you to extract infomration about the detected yeast cells i
 <table>
   <tr>	
     <td>
-        <img src="figures/mask_polygon_overlay.png"/>
+        <img src="figures/other/mask_polygon_overlay.png"/>
     </td>
   </tr>
   <tr>	
     <td>
-        <img src="figures/Test_Images_Movie1_Frame40_cell0.png"/>
+        <img src="figures/other/Test_Images_Movie1_Frame40_cell0.png"/>
     </td>
   </tr>
     <tr>
-    <td>Figure 4. The top image shows a zoomed in brightfield image with the mask and polygon boundery overlayed on a single segmented instance. The bottom graph shows the area profile of the selected yeast cell.</td>
+    <td>Figure 3. The top image shows a zoomed in brightfield image with the mask and polygon boundery overlayed on a single segmented instance. The bottom graph shows the area profile of the selected yeast cell.</td>
   </tr>
 </table>
 
 <table>
   <tr>	
     <td>
-        <img src="figures/comparison_mother_daughter.png"/>
+        <img src="figures/other/comparison_mother_daughter.png"/>
     </td>
   </tr>
     <tr>
-    <td>Figure. Comparison of area profiles between mother (blue) and daughter (orange) cells.</td>
+    <td>Figure 4. Comparison of area profiles between mother (blue) and daughter (orange) cells.</td>
   </tr>
 </table>
 
 Further, you can get the average growth rate and the standard deviation of the area and position of the tracked cells. These features can possibly be used in future work for false positive removal and differentiating between mother and daughter cells.
+
+<table>
+  <tr>	
+    <td>
+        <img src="figures/other/prediction_df.png"/>
+    </td>
+  </tr>
+    <tr>
+    <td>Table 1. Example of Mask R-CNN pipeline output.</td>
+  </tr>
+</table>
 
 # Evaluation
 
@@ -105,7 +116,7 @@ We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](ht
 <table>
   <tr>	
     <td>
-        <img src="figures/yit/test_sets_figure_all.png"/>
+        <img src="figures/yit/test_sets_seg.png"/>
     </td>
   </tr>
     <tr>
@@ -124,7 +135,7 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
 <table>
   <tr>	
     <td>
-        <img src="figures/calibration_curves/calibration_curves.png"/>
+        <img src="figures/eval/calibration_curves/calibration_curves.png"/>
     </td>
   </tr>
     <tr>
@@ -137,11 +148,11 @@ In the table below, we report the performance metrics for each test set for both
 <table>
   <tr>	
     <td>
-        <img src="figures/evaluation_table_full.png"/>
+        <img src="figures/eval/evaluation_table_full.png"/>
     </td>
   </tr>
     <tr>
-    <td>Table 1. Evaluation results from 4 test sets from the YIT. Precision, recall, accuracy, and the F1-score of the performance of our pipeline and of YeaZ are reported for both segmentation and tracking.</td>
+    <td>Table 2. Evaluation results from 4 test sets from the YIT. Precision, recall, accuracy, and the F1-score of the performance of our pipeline and of YeaZ are reported for both segmentation and tracking.</td>
   </tr>
 </table> 
 
