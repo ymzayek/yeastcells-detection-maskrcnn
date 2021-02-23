@@ -70,12 +70,12 @@ This pipeline allows you to extract infomration about the detected yeast cells i
 <table>
   <tr>	
     <td>
-        <img src="figures/other/mask_polygon_overlay.png"/>
+        <img src="figures/features/mask_polygon_overlay.png"/>
     </td>
   </tr>
   <tr>	
     <td>
-        <img src="figures/other/Test_Images_Movie1_Frame40_cell0.png"/>
+        <img src="figures/features/Test_Images_Movie1_Frame40_cell0.png"/>
     </td>
   </tr>
     <tr>
@@ -86,7 +86,7 @@ This pipeline allows you to extract infomration about the detected yeast cells i
 <table>
   <tr>	
     <td>
-        <img src="figures/other/comparison_mother_daughter.png"/>
+        <img src="figures/features/comparison_mother_daughter.png"/>
     </td>
   </tr>
     <tr>
@@ -99,7 +99,7 @@ Further, you can get the average growth rate and the standard deviation of the a
 <table>
   <tr>	
     <td>
-        <img src="figures/other/prediction_df.png"/>
+        <img src="figures/features/prediction_df.png"/>
     </td>
   </tr>
     <tr>
