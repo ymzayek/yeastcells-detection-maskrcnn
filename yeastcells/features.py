@@ -129,7 +129,9 @@ def track_len(labels, label = 0):
 
 def polygons_per_instance(labels, contours, output):
     polygons_inst = {l: {}  for l in set(labels)}
-    for z, (labels_, x, y) in enumerate(zip(group(labels, output), *contours)):
+    for z, (labels_, x, y) in enumerate(
+            zip(group(labels, output), *contours)
+    ):
         for label, x_, y_ in zip(labels_, x, y):
             p = np.concatenate(
                 (x_[:, None], y_[:, None]),
@@ -142,7 +144,9 @@ def polygons_per_instance(labels, contours, output):
 
 def polygons_per_cluster(labels, contours, output):
     polygons_clust = {l: {}  for l in set(labels) if l>=0}
-    for z, (labels_, x, y) in enumerate(zip(group(labels, output), *contours)):
+    for z, (labels_, x, y) in enumerate(
+            zip(group(labels, output), *contours)
+    ):
         for label, x_, y_ in zip(labels_, x, y):
             if label < 0: continue
             p = np.concatenate(

@@ -3,12 +3,8 @@ import numpy as np
 import copy
 from collections import Counter
 
-def get_seg_performance(
-        pred_s, gt_s, output, pipeline='maskrcnn', removed_fp=False, 
-        index=None
-    ):
+def get_seg_performance(pred_s, gt_s, output, pipeline='maskrcnn'):
     '''
-
     Parameters
     ----------
     pred_s : ndarray
@@ -19,17 +15,12 @@ def get_seg_performance(
         Predictor output from the detecron2 model.
     pipeline : str, optional
         Can be set to 'maskrcnn' or 'YeaZ'. The default is 'maskrcnn'.
-    removed_fp : bool, optional
-        Set an option to remove false positives. The default is False.
-    index : list, optional
-        The index of false positive predictions that will be removed. The default is None.
     Returns
     -------
-    pred : ndarray
-        Segmentation predictions with or without false positives.
     dict
         Performance indicators: true positives (tp), false positives (fp), 
-        false negatives (fn), joined segmentations (join), split segmentations (split).
+        false negatives (fn), joined segmentations (join), 
+        split segmentations (split).
     '''
     pred = copy.deepcopy(pred_s)
     gt = copy.deepcopy(gt_s)
@@ -40,9 +31,6 @@ def get_seg_performance(
             m for i in output for m in np.array(
                 i['instances'].pred_masks.to('cpu'), dtype=int)
         ]
-    if removed_fp is True:
-        masks = [i for j, i in enumerate(masks) if j not in index]
-        pred = np.array([i for j, i in enumerate(pred) if j not in index])
     r = np.zeros((len(pred),len(gt)))
     c1 = 0
     for pred_frame, mask in zip(pred[:,0], masks):
@@ -61,15 +49,30 @@ def get_seg_performance(
     fp = len(fp) + len(split)
     fn = len(gt) - tp
     
-    return pred, {
+    return {
         "tp": tp, "fp": fp, "fn": fn, 
         "join": len(join), "split": len(split)
     }
 
-def get_track_performance(
-        pred_t, gt_t, output, pipeline='maskrcnn', removed_fp=False, 
-        index=None
-    ):
+def get_track_performance(pred_t, gt_t, output, pipeline='maskrcnn'):
+    '''
+    Parameters
+    ----------
+    pred_t : ndarray
+        Tracking predictions.  
+    gt_t : ndarray
+        Tracking ground truth.
+    output : dict
+        Predictor output from the detecron2 model.
+    pipeline : str, optional
+        Can be set to 'maskrcnn' or 'YeaZ'. The default is 'maskrcnn'.
+    Returns
+    -------
+    dict
+        Performance indicators: true positives (tp), false positives (fp), 
+        false negatives (fn), joined tracks (join), 
+        split tracks (split).
+    '''
     pred = copy.deepcopy(pred_t)
     gt = copy.deepcopy(gt_t)
     if pipeline == 'YeaZ':
@@ -79,15 +82,14 @@ def get_track_performance(
             m for i in output for m in np.array(
                 i['instances'].pred_masks.to('cpu'), dtype=int)
         ]
-    if removed_fp is True:
-        masks = [i for j, i in enumerate(masks) if j not in index]
-        pred = np.array([i for j, i in enumerate(pred) if j not in index])
     r = np.zeros((len(pred),len(gt)))
     c1 = 0
     labels_matched = []
     for pred_frame, pred_lab, mask in zip(pred[:,0], pred[:,1], masks):
         c2 = 0
-        for gt_frame, gt_lab, gt_x, gt_y in zip(gt[:,0], gt[:,1], gt[:,2], gt[:,3]):
+        for gt_frame, gt_lab, gt_x, gt_y in zip(
+                gt[:,0], gt[:,1], gt[:,2], gt[:,3]
+        ):
             if (pred_frame==gt_frame) & (mask[gt_y,gt_x]==1) & (pred_lab!=-1):
                 r[c1,c2]=1
                 labels_matched.append((pred_lab, gt_lab))
@@ -96,7 +98,9 @@ def get_track_performance(
     
     #n_matched_tracks = len(Counter(labels_matched))            
     tracking_pairs = [i for i in Counter(labels_matched).keys()]
-    tracking_pairs = [[i for i,j in tracking_pairs], [j for i,j in tracking_pairs]]    
+    tracking_pairs = [
+        [i for i,j in tracking_pairs], [j for i,j in tracking_pairs]
+    ]    
     join, c_0 = np.unique(tracking_pairs[0], return_counts=True)
     join = len(join[c_0>1])
     split, c_1 = np.unique(tracking_pairs[1], return_counts=True)
@@ -109,12 +113,27 @@ def get_track_performance(
     fn = gt_number_of_links - n_matched_links
     fp = pred_number_of_links - n_matched_links
     
-    return pred, {
+    return {
         "tp": n_matched_links, "fp": fp, "fn": fn,
         "join": join, "split": split
     }
 
 def calculate_metrics(results, pred, gt):
+    '''
+    Parameters
+    ----------
+    results : TYPE
+        DESCRIPTION.
+    pred : ndarray
+        Segmentation or tracking predictions.
+    gt : TYPE
+        DESCRIPTION.
+    Returns
+    -------
+    dict
+        Performance metrics outcomes for 
+        F1-score, accuracy, precision and recall.
+    '''
     precision = results["tp"]/(results["tp"]+results["fp"])
     recall = results["tp"]/(results["tp"]+results["fn"])
     accuracy = results["tp"]/(results["tp"]+results["fp"]+results["fn"])

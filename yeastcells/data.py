@@ -26,7 +26,10 @@ def load_data(path, ff = '.tif'):
     
     return fns
 
-def read_image(fn, single_im=False, shape=1, start_frame=1, channel=1, flourescent=False):
+def read_image(
+        fn, single_im=False, shape=1, start_frame=1, 
+        channel=1, flourescent=False
+    ):
     '''
     Reads images into an array and converts to correct shape 
     for input into detectron2 predictor.
@@ -34,11 +37,24 @@ def read_image(fn, single_im=False, shape=1, start_frame=1, channel=1, flouresce
     ----------
     fn : str
         Path to one multi-image tiff file.
+    single_im : bool, optional
+        If reading a single image instead of time-series image stack use True. 
+        The default is False.
+    shape : int, optional
+        Options are 1 for (frames, length, width, channels) and 
+        2 for (frames, channels, length, width). The default is 1.
+    start_frame : int, optional
+        Choose the frame to start with in a time-series. The default is 1.
+    channel : int, optional
+        Choose which channel to read. The default is 1.
+    flourescent : bool, optional
+        Set to true if reading from a flourescent channel. 
+        The default is False (assuming bright-field).
     Returns
     -------
     ndarray
         A 4-dimensional array (frames, length, width, channels).
-    ''' 
+    '''
     if shape==1: 
         image = imread(fn)
         image = image[start_frame-1:]

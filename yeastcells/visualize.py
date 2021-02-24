@@ -101,7 +101,9 @@ def create_scene(
     labels = group(labels, output)
     x, y = contours
   
-    for frame_num, (frame, x_, y_, label) in enumerate(zip(canvas, x, y, labels)):
+    for frame_num, (frame, x_, y_, label) in enumerate(
+            zip(canvas, x, y, labels)
+    ):
         if framenum:
             style = {
                 'color': [255, 0, 0], 'fontScale': 2,
@@ -112,7 +114,7 @@ def create_scene(
                 style.update(framenum)
             cv2.putText(
                 frame, f'{frame_num}',
-                org=(5 * style['fontScale'], 30 * style['fontScale']), **style
+                org=(5*style['fontScale'], 30*style['fontScale']),**style
             )
     
         for x__, y__, label_ in zip(x_, y_, label):
@@ -128,7 +130,7 @@ def create_scene(
                     frame.astype(np.uint8),
                     poly,
                     isClosed=True,
-                    color = 255 * colors[label_, :3] if color is None else color,
+                    color = 255*colors[label_, :3] if color is None else color,
                     thickness=thickness
                 )
                 style = {
@@ -137,8 +139,11 @@ def create_scene(
                     'thickness':1
                 }
                 if labelnum is True:
-                    poly_ = Polygon(poly[0]) if len(poly[0]) >= 3 else (x__.mean(), y__.mean())
-                    poly_x,poly_y = zip(*(poly_.centroid.coords)) if len(poly[0]) >= 3 else poly_
+                    poly_ = Polygon(poly[0]) if len(poly[0]) >= 3 else (
+                        x__.mean(), y__.mean()
+                    )
+                    poly_x,poly_y = zip(*(poly_.centroid.coords)) if len(
+                        poly[0]) >= 3 else poly_
                     if type(poly_x) is tuple:
                         poly_x,poly_y = poly_x[0],poly_y[0]
                     frame[:] = cv2.putText(
@@ -169,8 +174,6 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
     -------
     TYPE
         DESCRIPTION.
-    label : int
-        The label of the cell that you center and zoom on. #remove this return
     '''
     label = l
     z, y, x = coordinates[labels == label].T 
@@ -178,7 +181,7 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
     ymin, ymax = int(max(0, y.mean() - w)), int(y.mean() + w)
     sub = (slice(ymin, ymax), slice(xmin, xmax)) 
 
-    return scene[:,sub[0],sub[1]], label
+    return scene[:,sub[0],sub[1]]
 
 def show_animation(scene, title=None, delay = 500):
     '''
