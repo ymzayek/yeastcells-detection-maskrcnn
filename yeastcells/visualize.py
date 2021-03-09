@@ -2,6 +2,7 @@
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
+from shapely.geometry import Polygon
 import cv2
 from .features import group 
 
@@ -213,7 +214,7 @@ def show_animation(scene, title=None, delay = 500):
     
     return movie
 
-def plot_area_profiles(mask_areas, time_min, label_list=[0], ax=None, title=None):
+def plot_area_profiles(mask_areas, time_min, labels, label_list=[0], ax=None, title=None):
     '''
     Useful to visualize area profile of individual or multiple cells over time. 
     If multiple cells, choose a mother/daughter pair to plot.
@@ -223,6 +224,8 @@ def plot_area_profiles(mask_areas, time_min, label_list=[0], ax=None, title=None
         Array containing mask area data with float type.
     time_min : ndarray
         Array with time offset data with int type.
+    labels : ndarray
+        Tracking labels of individual segmented cells.        
     label_list : list, optional
         List of labels for which you want to plot the area over time. 
         The default is [0].

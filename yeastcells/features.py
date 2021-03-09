@@ -181,8 +181,8 @@ def get_area_std(labels, pred_df):
     for l in range(0,max(labels)+1):
         area_std[l,0] = l
         area_std[l,1] = np.std(
-            pred_features_df.loc[
-            pred_features_df['Cell_label'] == l, 'Mask_Area(pxl)']
+            pred_df.loc[
+            pred_df['Cell_label'] == l, 'Mask_Area(pxl)']
         )
     
     return area_std
@@ -191,8 +191,8 @@ def get_position_std(labels, pred_df):
     position_std = np.zeros((len(np.unique(labels)),2),dtype=float)
     for l in range(0,max(labels)+1):  
         points_xy = np.array(
-            pred_features_df.loc[
-            pred_features_df['Cell_label'] == l, ('Position_X', 'Position_Y')
+            pred_df.loc[
+            pred_df['Cell_label'] == l, ('Position_X', 'Position_Y')
         ])
         dist_xy = []
         for i in range(len(points_xy)-1):
