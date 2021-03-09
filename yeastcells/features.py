@@ -14,10 +14,12 @@ def extract_contours(output):
         Detecron2 predictor output from the detecron2 Mask R-CNN model.
     Returns
     -------
-    x : TYPE  ym
-        The x coordinates of the contour points for each segmented cell.
-    y : TYPE ym
-        The y coordinates of the contour points for each segmented cell.
+    x : list
+        The x coordinates of the contour points for each segmented cell
+        in a nested list.
+    y : list
+        The y coordinates of the contour points for each segmented cell
+        in a nested list.
     '''
     outputs = output
     x, y = [], []
@@ -47,7 +49,7 @@ def get_centroids(labels, coordinates):
     Extract the centroid coordinates for each segmented cell.
     Parameters
     ----------
-    labels : list
+    labels : ndarray
         Tracking labels of individual cells.  
     coordinates : ndarray
         2D array of centroid coordinates individual cells
@@ -103,7 +105,7 @@ def group(labels, output):
     '''
     Parameters
     ----------
-    labels : list
+    labels : ndarray
         Tracking labels of individual cells.
     output : dict
         Detecron2 predictor output from the detecron2 Mask R-CNN model.
@@ -155,55 +157,38 @@ def get_masks(output):
     
     return masks
 
-def get_frame_offsets(labels, output):
-    o = list(map(existance_vectors, output))
-    frame_offsets = np.zeros((len(labels)),dtype=int)
-    n=0
-    for f in range(len(o)):
-        instances = len(o[f])
-        offset_=n
-        for n in range(offset_,instances+offset_):
-            frame_offsets[n] = f+1
-            n+=1
-    
-    return frame_offsets
-
-def get_area(masks, labels):
-    mask_area =np.zeros((len(labels)),dtype=float)
+def get_areas(masks, labels):
+    mask_areas =np.zeros((len(labels)),dtype=float)
     n=0
     for lab in labels:
-        mask_area[n] = masks[n].sum()
+        mask_areas[n] = masks[n].sum()
         n+=1
         
-    return mask_area
+    return mask_areas
 
-def get_average_growth_rate(polygons_clust, labels, output):
-    frame_offsets = get_frame_offsets(labels, output)
-    agr = np.zeros((len(polygons_clust),2),dtype=float)
+def get_average_growth_rate(mask_areas, labels, output):
+    agr = np.zeros((len(np.unique(labels)),2),dtype=float)
     for l in range(0,max(labels)+1): 
-        end = max(frame_offsets[labels==l])
-        start = min(frame_offsets[labels==l])
+        idx = np.where(labels == l)[0]
+        areas = mask_areas[idx]
         agr[l,0] = l
-        agr[l,1] = (
-            (polygons_clust[l][end-1].area/polygons_clust[l][start-1].area
-             )**(1/len(output))
-        ) - 1
+        agr[l,1] = ((areas[-1]/areas[0])**(1/len(output))) - 1
 
     return agr
         
-def get_area_std(polygons_clust, labels, pred_features_df):    
-    area_std = np.zeros((len(polygons_clust),2),dtype=float)
+def get_area_std(labels, pred_df):    
+    area_std = np.zeros((len(np.unique(labels)),2),dtype=float)
     for l in range(0,max(labels)+1):
         area_std[l,0] = l
         area_std[l,1] = np.std(
             pred_features_df.loc[
-            pred_features_df['Cell_label'] == l, 'Poly_Area(pxl)']
+            pred_features_df['Cell_label'] == l, 'Mask_Area(pxl)']
         )
     
     return area_std
     
-def get_position_std(polygons_clust, labels, pred_features_df):     
-    position_std = np.zeros((len(polygons_clust),2),dtype=float)
+def get_position_std(labels, pred_df):     
+    position_std = np.zeros((len(np.unique(labels)),2),dtype=float)
     for l in range(0,max(labels)+1):  
         points_xy = np.array(
             pred_features_df.loc[
@@ -232,10 +217,10 @@ def extract_labels(masks):
     Parameters
     ----------
     masks : ndarray
-        A 3D mask array (frames, length, width) containing data of int type. ym
+        3D mask array (frames, length, width) containing data of int type. ym
     Returns
     -------
-    labels : list
+    labels : ndarray
         Tracking labels of individual cells.
     labels_grouped : list
         Grouping of labels in a nested-list by frame.
@@ -243,7 +228,7 @@ def extract_labels(masks):
         2D array of centroid coordinates individual cells
         (labels, ([time, Y, X])).  
     instances : ndarray
-        A 2D mask array for each labeled cell. ym
+        2D mask array for each labeled cell. ym
     '''
     labels_grouped=[]            
     for i in range(len(masks)):
@@ -273,4 +258,5 @@ def extract_labels(masks):
             offset_frames[n] = f
             n+=1
     coordinates[:,0] = offset_frames
+    
     return labels, labels_grouped, coordinates, instances 

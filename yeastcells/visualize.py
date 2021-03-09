@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
-from shapely.geometry import Polygon
 import numpy as np
 import cv2
 from .features import group 
@@ -13,7 +12,7 @@ def plot_paths(
     '''
     Parameters
     ----------
-    labels : ? ym
+    labels : ndarray
         Tracking labels of individual segmented cells.
     coordinates : ndarray
         Coordinates of centroid of individual instances with 2 dimensions
@@ -22,18 +21,19 @@ def plot_paths(
         X-axis scale. The default is (0, 512).
     ylim : tuple, optional
         Y-axis scale. The default is (0, 512).
-    ax : TYPE, optional
-        DESCRIPTION. The default is None.
-    style : TYPE, optional
-        DESCRIPTION. The default is {}.
-    subset : TYPE, optional
-        Plot only a subset of labels. The default is None.
+    ax : Matplotlib axis object, optional
+        Sets axes instance. The default is None.
+    style : dict, optional
+        Keyword arguments to pass to matplotlib.axes.Axes.plot. 
+        The default is {}.
+    subset : list, optional
+        List of a subset of labels to plot. The default is None.
     title : str, optional
         Title for plot. The default is None.
     Returns
     -------
-    ax : TYPE
-        DESCRIPTION.
+    ax : Matplotlib axis object
+        Plots axis into figure.
     '''
     if ax is None:
         fig = plt.figure()
@@ -67,7 +67,7 @@ def create_scene(
         4D array containing data with int type representing time-series images.
     output : dict
         Predictor output from the detecron2 model.
-    labels : TYPE
+    labels : ndarray
         Tracking labels of individual segmented cells.
     contours : TYPE
         Cell boundary points. Contours[0] gives the x coordinates
@@ -90,8 +90,8 @@ def create_scene(
         The default is False.
     Returns
     -------
-    canvas : TYPE
-        DESCRIPTION.
+    canvas : ndarray
+        4D array containing data with int type representing time-series images.
     '''
     canvas = frames.copy()
   
@@ -157,12 +157,12 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
     '''
     Parameters
     ----------
-    scene : TYPE
-        DESCRIPTION.
+    scene : ndarray
+        4D array containing data with int type representing time-series images.
     coordinates : ndarray
         Coordinates of centroid of individual instances with 2 dimensions
         (labels, ([time, Y, X])).
-    labels : TYPE
+    labels : ndarray
         Tracking labels of individual segmented cells.
     w : int, optional
         Determines the zoom magnitude based on the cell in focus. 
@@ -172,8 +172,8 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
         The default is 0.
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    ndarray
+        4D array containing data with int type representing time-series images.
     '''
     label = l
     z, y, x = coordinates[labels == label].T 
@@ -187,16 +187,16 @@ def show_animation(scene, title=None, delay = 500):
     '''
     Parameters
     ----------
-    scene : TYPE
-        DESCRIPTION.
+    scene : ndarray
+        4D array containing data with int type representing time-series images.
     title : str, optional
         Set figure title. The default is None.
     delay : int, optional
         Set delay between frames in milliseconds. The default is 500.
     Returns
     -------
-    movie : TYPE
-        DESCRIPTION.
+    movie : FuncAnimation
+        Object of class matplotlib.animation.FuncAnimation that makes an animation.
     '''
     fig = plt.figure(figsize=(5, 5))
     fig.suptitle(title)
@@ -213,76 +213,72 @@ def show_animation(scene, title=None, delay = 500):
     
     return movie
 
-def plot_area_profiles(polygons, ti=3, label_list=[0], ax=None, title=None):
+def plot_area_profiles(mask_areas, time_min, label_list=[0], ax=None, title=None):
     '''
+    Useful to visualize area profile of individual or multiple cells over time. 
+    If multiple cells, choose a mother/daughter pair to plot.
     Parameters
     ----------
-    polygons : TYPE
-        DESCRIPTION.
-    ti : int, optional
-        Set frame rate in minutes to calculate time. 
-        The default is 3.
+    mask_area : ndarray
+        Array containing mask area data with float type.
+    time_min : ndarray
+        Array with time offset data with int type.
     label_list : list, optional
         List of labels for which you want to plot the area over time. 
         The default is [0].
-    ax : TYPE, optional
-        DESCRIPTION. The default is None.
+    ax : Matplotlib axis object, optional
+        Sets axes instance. The default is None.
     title : str, optional
         Set figure title. The default is None.
     Returns
     -------
-    ax : TYPE
-        DESCRIPTION.
+    ax : Matplotlib axis object
+        Plots axis into figure.
     '''
     if ax is None:
         fig = plt.figure()  
         fig.suptitle(title)
     for label in label_list:
-        time_min = []
-        for t in polygons[label].keys():
-            time_min.append(t*ti)
-        area = np.zeros((len(polygons[label])))
-        for i,p in enumerate(polygons[label]):
-            area[i] = polygons[label][p].area
+        idx = np.where(labels == label)[0]
+        areas = mask_areas[idx]
+        time_min= time_min[idx]
         ax = fig.add_subplot(111)
         ax.set_xlabel('Time (min)')
         ax.set_ylabel('Area')
-        ax.scatter(time_min, area, s=1)
+        ax.scatter(time_min, areas, s=2)
         ax.legend(label_list, loc="upper left")
         
-    return ax  
+    return ax 
 
-def plot_polygon_mask(
-        masks, labels, output, frames, polygons, 
+def plot_mask_overlay(
+        masks, labels, output, frames, 
         label_list=[0], frame=0, ax=None, title=None
     ):
     '''
     Parameters
     ----------
-    masks : TYPE
-        DESCRIPTION.
-    labels : TYPE
-        Tracking labels of individual segmented cells.
+    masks : ndarray 
+        3D mask array containing data with int type.
+    labels : ndarray
+        Tracking labels of individual segmented cells. 
     output : dict
         Predictor output from the detecron2 model.
     frames : ndarray
         A 4-dimensional array of the time-series images
         (frames, length, width, channels).
-    polygons : TYPE
-        DESCRIPTION.
     label_list : list, optional
         List of labels for which you want to plot the area over time. 
         The default is [0].
     frame : int, optional
         Select the frame that you would like to plot. The default is 0.
-    ax : TYPE, optional
-        DESCRIPTION. The default is None.
+    ax : Matplotlib axis object, optional
+        Sets axes instance. The default is None.
     title : str, optional
         Set figure title. The default is None.
     Returns
     -------
-    ax : TYPE
-        DESCRIPTION.
+    ax : Matplotlib axis object
+        Plots axis into figure.
     '''
     if ax is None:
         fig = plt.figure()
@@ -295,7 +291,5 @@ def plot_polygon_mask(
         if label in labels_[frame]: #for verifying correct label is chosen
             mask = mask[frame]    
         ax = plt.imshow(mask, alpha=0.1)
-        x, y = polygons[label][frame].exterior.coords.xy
-        ax = plt.plot(x, y)
         
     return ax      

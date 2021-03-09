@@ -53,6 +53,7 @@ def read_image(fn, time_series=True, channel=1, flourescent=False):
         4D array containing data with int type.
     '''
     image = imread(fn)
+    #image = np.rollaxis(image,1,4)
     if image.ndim==4 and time_series==True:  
         if flourescent==False:
             return (
@@ -155,7 +156,7 @@ def get_pred(output, labels, coordinates, ti=3, start=1):
     ----------
     output : dict
         Detecron2 predictor output from the detecron2 Mask R-CNN model.
-    labels : list
+    labels : ndarray
         Tracking labels of individual cells.  
     coordinates : ndarray
         2D array of centroid coordinates individual cells
@@ -220,7 +221,7 @@ def get_pred_yeaz(labels, labels_grouped, coordinates):
     for reformatting YeaZ predictions into arrays. 
     Parameters
     ----------
-    labels : list
+    labels : ndarray
         Tracking labels of individual cells.
     labels_grouped : list
         Grouping of labels in a nested-list by frame.
