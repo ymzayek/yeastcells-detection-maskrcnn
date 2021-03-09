@@ -6,16 +6,19 @@ from PIL import Image
 import os
 from .clustering import existance_vectors
 
-def load_data(path, ff = '.tif'):
+def load_data(path, ff = ''):
     '''
+    Reads filenames from path.
     Parameters
     ----------
     path : str
-        Path to tiff image files.
+        Path to image file(s).
+    ff : str
+        Input file(s) based on ending (e.g. '.tif') or write full filename.    
     Returns
     -------
-    fns : ndarray
-        All filenames ending with .tif in the path.
+    fns : list of str
+        All filenames in the path.
     '''
     fns = [
         f'{path}/{fn}' 
@@ -26,25 +29,19 @@ def load_data(path, ff = '.tif'):
     
     return fns
 
-def read_image(
-        fn, single_im=False, shape=1, start_frame=1, 
-        channel=1, flourescent=False
-    ):
+def read_image(fn, time_series=True, channel=1, flourescent=False):
     '''
-    Reads images into an array and converts to correct shape 
-    for input into detectron2 predictor.
+    Reads 3D or 4D image files with shape 
+    (frames, length, width, channels) or (frames, length, width) 
+    into an array for input into detectron2 predictor. 
+    If channel is bright-field, it will be converted to grayscale.
     Parameters
     ----------
     fn : str
         Path to one multi-image tiff file.
-    single_im : bool, optional
-        If reading a single image instead of time-series image stack use True. 
-        The default is False.
-    shape : int, optional
-        Options are 1 for (frames, length, width, channels) and 
-        2 for (frames, channels, length, width). The default is 1.
-    start_frame : int, optional
-        Choose the frame to start with in a time-series. The default is 1.
+    time_series : bool, optional
+        If reading a single image instead of time-series image stack use False. 
+        The default is True.
     channel : int, optional
         Choose which channel to read. The default is 1.
     flourescent : bool, optional
@@ -53,16 +50,10 @@ def read_image(
     Returns
     -------
     ndarray
-        A 4-dimensional array (frames, length, width, channels).
+        4D array containing data with int type.
     '''
-    if shape==1: 
-        image = imread(fn)
-        image = image[start_frame-1:]
-    elif shape==2: 
-        image = imread(fn) 
-        image = np.rollaxis(image,1,4)
-        image = image[start_frame-1:]
-    if image.ndim==4 and single_im==False:  
+    image = imread(fn)
+    if image.ndim==4 and time_series==True:  
         if flourescent==False:
             return (
                 (image / image.max() * 255)[:, ..., channel-1:channel] 
@@ -70,14 +61,14 @@ def read_image(
             ).astype(np.uint8)
         else:
             return (image[:, ..., channel-1]).astype(np.uint8)
-    elif image.ndim==3 and single_im==False:  
+    elif image.ndim==3 and time_series==True:  
         if flourescent==False:
             return (
                 (image / image.max() * 255)[:, ..., None] * [[[1, 1, 1]]]
             ).astype(np.uint8)         
         else:
             return (image[:, ..., None]).astype(np.uint8) 
-    elif image.ndim==3 and single_im==True: 
+    elif image.ndim==3 and time_series==False: 
         if flourescent==False:
             return (
                 (image / image.max() * 255)[None, ..., channel-1:channel] 
@@ -88,15 +79,15 @@ def read_image(
         
 def read_images_cat(fns): 
     '''
-    For reading multiple single-image tiffs and concatenating them.
+    For reading multiple single-image files and concatenating them.
     Parameters
     ----------
     fns : str
-        Path to multiple tiff files.
+        Path to multiple image files.
     Returns
     -------
     ndarray
-        A 4-dimensional array (frames, length, width, channels).
+        4D array containing data with int type.
     '''
     image=[]
     image=[imread(i) for i in list(fns)]
@@ -111,11 +102,11 @@ def read_tiff_mask(path):
     Parameters
     ----------
     path : str
-        Path to one multi-image tiff mask.
+        Path to mask file.
     Returns
     -------
     masks : ndarray 
-        A 4-dimensional array (frames, length, width, channels). ym
+        3D mask array containing data with int type.
     '''
     img = Image.open(path)
     masks = []
@@ -123,72 +114,24 @@ def read_tiff_mask(path):
         img.seek(i)
         masks.append(np.array(img))
     masks = np.array(masks)
+    
     return masks
-
-def extract_labels(masks, progress=False):
-    '''
-    Extract labels for each segmented instance in masks.
-    Parameters
-    ----------
-    masks : ndarray
-        A mask array with 4 dimensions (frames, length, width, channels).
-    Returns
-    -------
-    labels_grouped : list
-        Grouping of labels in a list by frame.
-    labels : ndarray
-        Tracking labels of individual instances.
-    coordinates : ndarray
-        Coordinates of centroid of individual instances with 2 dimensions 
-        (labels, ([time, Y, X])).
-    instances : ndarray
-        A mask array for each labeled instances.
-    '''
-    labels_grouped=[]            
-    for i in range(len(masks)):
-        label = np.unique(masks[i])[1:]
-        labels_grouped.append(label)
-    instance = np.cumsum([0] + [len(l) for l in labels_grouped])
-    instances = np.zeros(
-        (instance.max(), np.array(np.shape(masks[i][0])).item(),np.array(
-            np.shape(masks[i][1])).item())
-    )
-    i = 0
-    for mask,label in zip(masks,labels_grouped):
-        for n in label:
-            instances[i] = (mask==n).astype(int)
-            i+=1
-    coordinates = np.array(
-        [(t, ) + tuple(map(np.mean, np.where(m == 1.))) for t,m in enumerate(
-            instances)]
-    )  
-    labels = np.hstack(labels_grouped)
-    offset_frames = np.zeros((len(labels)),dtype=int)
-    n=0
-    for f in range(len(labels_grouped)):
-        tmp = len(labels_grouped[f])
-        offset_=n
-        for n in range(offset_,tmp+offset_):
-            offset_frames[n] = f
-            n+=1
-    coordinates[:,0] = offset_frames
-    return labels_grouped, labels, coordinates, instances 
 
 def get_gt_yit(seg_path, track_path):
     '''
-    Retrieves and reformats ground truth data into arrays.
+    Retrieves and reformats ground truth data from YIT into arrays.
     Parameters
     ----------
     seg_path : str
-        Path to segmentation ground truth csv file.
+        Path and filename of segmentation ground truth csv file.
     track_path : str
-        Path to tracking ground truth csv file.      
+        Path and filename of tracking ground truth csv file.      
     Returns
     -------
     gt_s : ndarray
-        Segmentation ground truth. ym
+        Segmentation ground truth data array containing data with int type.
     gt_t : ndarray
-        Tracking ground truth.    ym
+        Tracking ground truth data array containing data with int type.
     '''
     gt_s_df=pd.read_csv(f'{seg_path}')
     gt_t_df=pd.read_csv(f'{track_path}')
@@ -206,25 +149,38 @@ def get_gt_yit(seg_path, track_path):
 
 def get_pred(output, labels, coordinates, ti=3, start=1):
     '''
-    Reformats prediction outputs into 1 array.
+    Reformats prediction outputs into arrays and a pandas DataFrame. 
+    -1 labels are considered as noise for tracking.
     Parameters
     ----------
     output : dict
-        Predictor output from the detecron2 model.
-    labels : ndarray
-        Tracking labels of individual segmented cells.    
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    labels : list
+        Tracking labels of individual cells.  
     coordinates : ndarray
-        Coordinates of centroid of individual cells with 2 dimensions
-        (labels, ([time, Y, X])).        
+        2D array of centroid coordinates individual cells
+        (labels, ([time, Y, X])). 
+    ti : int
+        Time (min) interval representing frame rate of time-series data.
+    start : int
+        The frame number where the model started segmenting.
     Returns
     -------
     pred_s : ndarray
-        Segmentation predictions.     
+        Segmentation prediction data array containing data with int type. ym    
     pred_t : ndarray
-        Tracking predictions.
-    pred_df : ndarray
-        Combined segmentation and tracking results
-        -1 labels considered as noise for tracking.         
+        Tracking prediction data array containing data with int type. ym
+    pred_df : pd.DataFrame
+        Dataframe containing segmentation and tracking results with columns:
+            =============  ==================================================
+            Frame_number   The frame number in time-series image data.
+            Time(min)      The time in minutes corresponding to each frame.
+            Cell_number    Number given to each segmented cell within a frame.
+            Cell_label     Number output by tracking clustering algorithm.
+                           Each tracked cell has a unique label number.
+            Position_X     The x coordinate of a given cell centroid.
+            Position_Y     The y coordinate of a given cell centroid.
+            =============  ==================================================
     '''
     o = list(map(existance_vectors, output))
     pred_s= np.zeros(((len(labels),4))).astype(int)
@@ -258,25 +214,25 @@ def get_pred(output, labels, coordinates, ti=3, start=1):
     
     return pred_s, pred_t, pred_df
 
-def get_pred_yeaz(labels_grouped, labels, coordinates):
+def get_pred_yeaz(labels, labels_grouped, coordinates):
     '''
-    An alternative to get_pred and is used specifically
-    for reformatting YeaZ predictions into an array. 
+    An alternative to get_pred function used specifically
+    for reformatting YeaZ predictions into arrays. 
     Parameters
     ----------
-    labels_grouped : list ym
-        Grouping of labels in a list by frame.
-    labels : ndarray
-        Tracking labels of individual instances.    
+    labels : list
+        Tracking labels of individual cells.
+    labels_grouped : list
+        Grouping of labels in a nested-list by frame.
     coordinates : ndarray
-        Coordinates of centroid of individual instances with 2 dimensions 
-        (labels, ([time, Y, X])).        
+        2D array of centroid coordinates individual cells
+        (labels, ([time, Y, X])).      
     Returns
     -------
     pred_s : ndarray
-        Segmentation predictions. ym     
+        Segmentation prediction data array containing data with int type. ym    
     pred_t : ndarray
-        Tracking predictions.    ym          
+        Tracking prediction data array containing data with int type. ym        
     '''
     pred_s= np.zeros(((len(labels),4))).astype(int)
     i=0

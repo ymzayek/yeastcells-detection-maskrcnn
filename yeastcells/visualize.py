@@ -63,8 +63,8 @@ def create_scene(
     '''
     Parameters
     ----------
-    frames : TYPE
-        Time-series images.
+    frames : ndarray
+        4D array containing data with int type representing time-series images.
     output : dict
         Predictor output from the detecron2 model.
     labels : TYPE
@@ -72,13 +72,13 @@ def create_scene(
     contours : TYPE
         Cell boundary points. Contours[0] gives the x coordinates
         and contours[1] gives the y coordinates.
-    subset : TYPE, optional
-        Plot only a subset of labels. The default is None.
+    subset : list, optional
+        List of a subset of labels to plot. The default is None.
     thickness : int, optional
         Thickness of cell boundary line that is drawn on the image. 
         The default is 1.
-    color : TYPE, optional
-        Color of cell boundary lines. The default is None. 
+    color : tuple, optional
+        Set BGR for color of cell boundary lines. The default is None. 
         If default is chosen, different and random colors are 
         assigned to each cell.
     framenum : bool, optional
@@ -191,8 +191,8 @@ def show_animation(scene, title=None, delay = 500):
         DESCRIPTION.
     title : str, optional
         Set figure title. The default is None.
-    delay : TYPE, optional
-        DESCRIPTION. The default is 500.
+    delay : int, optional
+        Set delay between frames in milliseconds. The default is 500.
     Returns
     -------
     movie : TYPE

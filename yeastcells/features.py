@@ -2,21 +2,21 @@
 import numpy as np
 import cv2
 from collections import Counter
-from shapely.geometry import Polygon, Point
 import math
 from .clustering import existance_vectors
 
 def extract_contours(output):
     '''
+    Extract the coordinates of the contour points for each segmented cell.
     Parameters
     ----------
     output : dict
-        Predictor output from the detecron2 model.
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
     Returns
     -------
-    x : TYPE
+    x : TYPE  ym
         The x coordinates of the contour points for each segmented cell.
-    y : TYPE
+    y : TYPE ym
         The y coordinates of the contour points for each segmented cell.
     '''
     outputs = output
@@ -42,19 +42,20 @@ def extract_contours(output):
         
     return x, y
 
-def get_centroids(coordinates, labels):
+def get_centroids(labels, coordinates):
     '''
+    Extract the centroid coordinates for each segmented cell.
     Parameters
     ----------
+    labels : list
+        Tracking labels of individual cells.  
     coordinates : ndarray
-        Coordinates of centroid of individual instances with 2 dimensions
-        (labels, ([time, Y, X])).
-    labels : TYPE
-        Tracking labels of individual segmented cells.
+        2D array of centroid coordinates individual cells
+        (labels, ([time, Y, X])). 
     Returns
     -------
-    centroids : TYPE
-        The coordinates of the centroids of the segmented cells.
+    centroids : ndarray
+        An array with the cell labels and the coordinates of their centroids.
     '''
     centroids = np.zeros(((len(labels),3))).astype(int)    
     centroids[:,0] = labels
@@ -65,21 +66,23 @@ def get_centroids(coordinates, labels):
 
 def get_instance_numbers(output):
     '''
+    Each segmented cell gets a unique number per frame. 
+    This is not the same as the tracking labels since 
+    the numbers are unique within a frame but are not 
+    consistent for one cell across frames. It serves
+    more as a count of cells in each frame.
     Parameters
     ----------
     output : dict
-        Predictor output from the detecron2 model.
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
     Returns
     -------
-    inst_num : TYPE
-        Each segmented cell gets a unique number per frame. 
-        This is not the same as the tracking labels since 
-        the numbers are unique within a frame but are not 
-        consistent for one cell across frames. It serves
-        more as a count of cells in each frame.
+    inst_num : ndarray
+        Array of unique cell number assigned to each cell within a frame 
+        containing data with int type.
     coordinates : ndarray
-        Coordinates of centroid of individual instances with 2 dimensions
-        (labels, ([time, Y, X])).
+        2D array of centroid coordinates individual cells
+        (labels, ([time, Y, X])). ym is this needed?
     '''
     o = list(map(existance_vectors, output))
     inst_num = np.array([], dtype=int)
@@ -96,10 +99,22 @@ def get_instance_numbers(output):
         
     return inst_num, coordinates    
 
-def group(l, outputs):
-    boundaries = np.cumsum([0] + [len(o['instances']) for o in outputs])
+def group(labels, output):
+    '''
+    Parameters
+    ----------
+    labels : list
+        Tracking labels of individual cells.
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    Returns
+    -------
+    list
+        A nested-list of labels grouped by frame.
+    '''
+    boundaries = np.cumsum([0] + [len(o['instances']) for o in output])
     return [
-        l[a:b]
+        labels[a:b]
         for a, b in zip(boundaries, boundaries[1:])
     ]
 
@@ -127,37 +142,6 @@ def track_len(labels, label = 0):
     counts = Counter(labels)
     return counts[label]
 
-def polygons_per_instance(labels, contours, output):
-    polygons_inst = {l: {}  for l in set(labels)}
-    for z, (labels_, x, y) in enumerate(
-            zip(group(labels, output), *contours)
-    ):
-        for label, x_, y_ in zip(labels_, x, y):
-            p = np.concatenate(
-                (x_[:, None], y_[:, None]),
-                axis=1
-            )
-            shape = Polygon(p) if len(p) >= 3 else Point(x_.mean(), y_.mean())
-            polygons_inst[label][z] = shape
-            
-    return polygons_inst
-
-def polygons_per_cluster(labels, contours, output):
-    polygons_clust = {l: {}  for l in set(labels) if l>=0}
-    for z, (labels_, x, y) in enumerate(
-            zip(group(labels, output), *contours)
-    ):
-        for label, x_, y_ in zip(labels_, x, y):
-            if label < 0: continue
-            p = np.concatenate(
-                (x_[:, None], y_[:, None]),
-                axis=1
-            )
-            shape = Polygon(p) if len(p) >= 3 else Point(x_.mean(), y_.mean())
-            polygons_clust[label][z] = shape
-            
-    return polygons_clust
-
 def get_distance(p1, p2): 
     distance = math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
     
@@ -184,17 +168,14 @@ def get_frame_offsets(labels, output):
     
     return frame_offsets
 
-def get_area(polygons_inst, masks, labels, output): #make sure polygons include noise
-    frame_offsets = get_frame_offsets(labels, output)    
-    poly_area =np.zeros((len(labels)),dtype=float)
+def get_area(masks, labels):
     mask_area =np.zeros((len(labels)),dtype=float)
     n=0
-    for lab, frame in zip(labels, frame_offsets):
-        poly_area[n] = polygons_inst[lab][frame-1].area
+    for lab in labels:
         mask_area[n] = masks[n].sum()
         n+=1
         
-    return poly_area,  mask_area
+    return mask_area
 
 def get_average_growth_rate(polygons_clust, labels, output):
     frame_offsets = get_frame_offsets(labels, output)
@@ -244,3 +225,52 @@ def get_pixel_intensity(masks, output, im):
     ]
     
     return pi
+
+def extract_labels(masks):
+    '''
+    Extract labels from masks with multiple cells per mask.
+    Parameters
+    ----------
+    masks : ndarray
+        A 3D mask array (frames, length, width) containing data of int type. ym
+    Returns
+    -------
+    labels : list
+        Tracking labels of individual cells.
+    labels_grouped : list
+        Grouping of labels in a nested-list by frame.
+    coordinates : ndarray
+        2D array of centroid coordinates individual cells
+        (labels, ([time, Y, X])).  
+    instances : ndarray
+        A 2D mask array for each labeled cell. ym
+    '''
+    labels_grouped=[]            
+    for i in range(len(masks)):
+        label = np.unique(masks[i])[1:]
+        labels_grouped.append(label)
+    instance = np.cumsum([0] + [len(l) for l in labels_grouped])
+    instances = np.zeros(
+        (instance.max(), np.array(np.shape(masks[i][0])).item(),np.array(
+            np.shape(masks[i][1])).item())
+    )
+    i = 0
+    for mask,label in zip(masks,labels_grouped):
+        for n in label:
+            instances[i] = (mask==n).astype(int)
+            i+=1
+    coordinates = np.array(
+        [(t, ) + tuple(map(np.mean, np.where(m == 1.))) for t,m in enumerate(
+            instances)]
+    )  
+    labels = np.hstack(labels_grouped)
+    offset_frames = np.zeros((len(labels)),dtype=int)
+    n=0
+    for f in range(len(labels_grouped)):
+        tmp = len(labels_grouped[f])
+        offset_=n
+        for n in range(offset_,tmp+offset_):
+            offset_frames[n] = f
+            n+=1
+    coordinates[:,0] = offset_frames
+    return labels, labels_grouped, coordinates, instances 
