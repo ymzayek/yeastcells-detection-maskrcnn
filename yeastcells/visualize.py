@@ -11,6 +11,7 @@ def plot_paths(
         ax=None, style={}, subset=None, title=None
     ):
     '''
+    Plots the paths of labelled ('tracked') cells in a 3D figure.
     Parameters
     ----------
     labels : ndarray
@@ -62,6 +63,8 @@ def create_scene(
         color=None, framenum=False, labelnum=False
     ):
     '''
+    Sets up 4D data array of formatted time-series images to be passed to the 
+    function visualize.show_animation to make an animation.
     Parameters
     ----------
     frames : ndarray
@@ -70,9 +73,10 @@ def create_scene(
         Predictor output from the detecron2 model.
     labels : ndarray
         Tracking labels of individual segmented cells.
-    contours : TYPE
-        Cell boundary points. Contours[0] gives the x coordinates
-        and contours[1] gives the y coordinates.
+    contours : list
+        Zipped list of cell boundary points. 
+        Contours[0] gives the x coordinates and 
+        contours[1] gives the y coordinates.
     subset : list, optional
         List of a subset of labels to plot. The default is None.
     thickness : int, optional
@@ -156,6 +160,11 @@ def create_scene(
 
 def select_cell(scene, coordinates, labels, w=40, l=0):
     '''
+    Sets up 4D data array of formatted time-series images to be passed to the 
+    function visualize.show_animation to make an animation. 
+    It takes the output from the visualize.create_scene function as input 
+    and allows for selecting and zooming in on one cell to follow throughout 
+    the time-series.   
     Parameters
     ----------
     scene : ndarray
@@ -186,6 +195,7 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
 
 def show_animation(scene, title=None, delay = 500):
     '''
+    Creates and displays a movie of the time-series images.
     Parameters
     ----------
     scene : ndarray
@@ -197,7 +207,8 @@ def show_animation(scene, title=None, delay = 500):
     Returns
     -------
     movie : FuncAnimation
-        Object of class matplotlib.animation.FuncAnimation that makes an animation.
+        Object of class matplotlib.animation.FuncAnimation 
+        that makes an animation.
     '''
     fig = plt.figure(figsize=(5, 5))
     fig.suptitle(title)
@@ -217,7 +228,7 @@ def show_animation(scene, title=None, delay = 500):
 def plot_area_profiles(mask_areas, time_min, labels, label_list=[0], ax=None, title=None):
     '''
     Useful to visualize area profile of individual or multiple cells over time. 
-    If multiple cells, choose a mother/daughter pair to plot.
+    If multiple cells, e.g. choose a mother/daughter pair to plot.
     Parameters
     ----------
     mask_area : ndarray
@@ -258,16 +269,18 @@ def plot_mask_overlay(
         label_list=[0], frame=0, ax=None, title=None
     ):
     '''
+    Display the masks of the segmented cells over the image of the cells. 
+    Useful to visually assess segmentation accuracy.
     Parameters
     ----------
     masks : ndarray 
-        3D mask array containing data with int type.
+        3D binary mask array of segmented cells containing data with int type.
     labels : ndarray
         Tracking labels of individual segmented cells. 
     output : dict
         Predictor output from the detecron2 model.
     frames : ndarray
-        A 4-dimensional array of the time-series images
+        4D array of the time-series images
         (frames, length, width, channels).
     label_list : list, optional
         List of labels for which you want to plot the area over time. 

@@ -5,14 +5,17 @@ from collections import Counter
 
 def get_seg_performance(pred_s, gt_s, output, pipeline='maskrcnn'):
     '''
+    For evaluating segmentation performance on benchmark data from 
+    Yeast Image Toolkit.
+    Compares the prediction results with ground truth data. 
     Parameters
     ----------
     pred_s : ndarray
-        Segmentation predictions.  
+        Segmentation prediction data array containing data with int type.
     gt_s : ndarray
-        Segmentation ground truth.
+        Segmentation ground truth data array containing data with int type.
     output : dict
-        Predictor output from the detecron2 model.
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
     pipeline : str, optional
         Can be set to 'maskrcnn' or 'YeaZ'. The default is 'maskrcnn'.
     Returns
@@ -56,14 +59,17 @@ def get_seg_performance(pred_s, gt_s, output, pipeline='maskrcnn'):
 
 def get_track_performance(pred_t, gt_t, output, pipeline='maskrcnn'):
     '''
+    For evaluating tracking performance on benchmark data from 
+    Yeast Image Toolkit.
+    Compares the prediction results with ground truth data. 
     Parameters
     ----------
     pred_t : ndarray
-        Tracking predictions.  
+        Tracking prediction data array containing data with int type.
     gt_t : ndarray
-        Tracking ground truth.
+        Tracking ground truth data array containing data with int type.
     output : dict
-        Predictor output from the detecron2 model.
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
     pipeline : str, optional
         Can be set to 'maskrcnn' or 'YeaZ'. The default is 'maskrcnn'.
     Returns
@@ -120,14 +126,17 @@ def get_track_performance(pred_t, gt_t, output, pipeline='maskrcnn'):
 
 def calculate_metrics(results, pred, gt):
     '''
+    Calculate 4 standard performance metrics using performance indicators.
     Parameters
     ----------
-    results : TYPE
-        DESCRIPTION.
+    results : dict
+        Contains 5 performance indicators: 
+        true positives (tp), false positives (fp), false negatives (fn), 
+        joined tracks (join), split tracks (split).
     pred : ndarray
-        Segmentation or tracking predictions.
-    gt : TYPE
-        DESCRIPTION.
+        Array with segmentation or tracking predictions.
+    gt : ndarray
+        Array with segmentation or tracking ground truth.
     Returns
     -------
     dict

@@ -6,6 +6,26 @@ from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
 
 def load_model(model_path, seg_thresh=0.94, device='cpu'):
+    '''
+    Load and configure the Mask-RCNN model.
+    Parameters
+    ----------
+    model_path : str
+        Path to model file containing weights.
+    seg_thresh : float, optional
+        Set the segmentation threshold score for the model to assign a 
+        pixel to a cell region using the probability outcomes of 
+        the predictor. The default is 0.94. Increasing the score may lead to 
+        less segmentations, particularly of small buds, 
+        while decrasing the score can lead to false positives.
+    device : str, optional
+        Can be set to a gpu or cpu depending on availability. 
+        The default is 'cpu'.
+    Returns
+    -------
+    predictor : TYPE
+        DESCRIPTION.
+    '''
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(
         "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))

@@ -8,13 +8,14 @@ from .clustering import existance_vectors
 
 def load_data(path, ff = ''):
     '''
-    Reads filenames from path.
+    Reads filenames from a path.
     Parameters
     ----------
     path : str
         Path to image file(s).
     ff : str
-        Input file(s) based on ending (e.g. '.tif') or write full filename.    
+        Input file(s) based on file format (e.g. '.tif') 
+        or write full filename.    
     Returns
     -------
     fns : list of str
@@ -100,23 +101,24 @@ def read_images_cat(fns):
 
 def read_tiff_mask(path):
     '''
+    Reads a tiff non-binary mask file into mask array.
     Parameters
     ----------
     path : str
         Path to mask file.
     Returns
     -------
-    masks : ndarray 
+    masks_nb : ndarray 
         3D mask array containing data with int type.
     '''
     img = Image.open(path)
-    masks = []
+    masks_nb = []
     for i in range(img.n_frames):
         img.seek(i)
-        masks.append(np.array(img))
-    masks = np.array(masks)
+        masks_nb.append(np.array(img))
+    masks_nb = np.array(masks_nb)
     
-    return masks
+    return masks_nb
 
 def get_gt_yit(seg_path, track_path):
     '''
@@ -168,9 +170,9 @@ def get_pred(output, labels, coordinates, ti=3, start=1):
     Returns
     -------
     pred_s : ndarray
-        Segmentation prediction data array containing data with int type. ym    
+        Segmentation prediction data array containing data with int type.  
     pred_t : ndarray
-        Tracking prediction data array containing data with int type. ym
+        Tracking prediction data array containing data with int type.
     pred_df : pd.DataFrame
         Dataframe containing segmentation and tracking results with columns:
             =============  ==================================================
@@ -231,9 +233,9 @@ def get_pred_yeaz(labels, labels_grouped, coordinates):
     Returns
     -------
     pred_s : ndarray
-        Segmentation prediction data array containing data with int type. ym    
+        Segmentation prediction data array containing data with int type    
     pred_t : ndarray
-        Tracking prediction data array containing data with int type. ym        
+        Tracking prediction data array containing data with int type.       
     '''
     pred_s= np.zeros(((len(labels),4))).astype(int)
     i=0

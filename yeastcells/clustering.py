@@ -4,19 +4,17 @@ import numpy as np
 from scipy.sparse import coo_matrix
 from sklearn.cluster import DBSCAN
 import random
-from collections import Counter
-import lapjv
 
 def existance_vectors(output):
     '''
     Parameters
     ----------
     output : dict
-        Predictor output from the detecron2 model.
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
     Returns
     -------
     ndarray
-        Get masks in frames.
+        .
     '''
     o = np.array(output['instances'].pred_masks.to('cpu'))
     return o.reshape(o.shape[0], -1).astype(np.float32)
@@ -43,13 +41,16 @@ def calc_iou(outputs0, outputs1):
 
 def get_distances(outputs, dmax=5, progress=False):
     '''
+    Build a COO matrix of distances based on calculating the IOUs between 
+    all cell instances from one frame to another. This distance matrix is 
+    passed to DBSCAN for clustering the cells into tracks.
     Parameters
     ----------
     output : dict
-        Predictor output from the detecron2 model.
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
     dmax : int, optional
         The maximum frame distance to look ahead and behind to calculate 
-        the interframe distances between the instances. The default is 5.
+        the interframe IOUs between the cells. The default is 5.
     progress : bool, optional
         The default is False.
     Returns
@@ -78,22 +79,69 @@ def get_distances(outputs, dmax=5, progress=False):
 
     return (coo_matrix((values, (rows, cols)), shape=(offsets[-1], offsets[-1])))
 
-def cluster_cells(outputs, dmax=5, min_samples=3, eps=0.6, progress=False): 
-    distances = get_distances(outputs, dmax=dmax, progress=progress)
+def cluster_cells(output, dmax=5, min_samples=3, eps=0.6, progress=False): 
+    '''
+    Configure and run DBSCAN clustering algorithm to find cell tracks.
+    Parameters
+    ----------
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    dmax : int, optional
+        The maximum frame distance to look ahead and behind to calculate 
+        the interframe IOUs between the cells. The default is 5.
+    min_samples : int, optional
+        Parameter of DBSCAN. The default is 3. ym
+    eps : float, optional
+        Parameter of DBSCAN. The default is 0.6. ym
+    progress : bool, optional
+        The default is False.
+    Returns
+    -------
+    ndarray
+        Tracking labels of individual segmented cells.
+    coordinates : ndarray
+        Coordinates of centroid of individual instances with 2 dimensions
+        (labels, ([time, Y, X])).
+    '''
+    distances = get_distances(output, dmax=dmax, progress=progress)
     tqdm_ = tqdm if progress else (lambda x: x)
     clusters = DBSCAN(eps=eps, min_samples=min_samples, metric='precomputed')
     clusters.fit(distances)     
 
     coordinates = np.array([
         (t, ) + tuple(map(np.mean, np.where(mask)))
-        for t, o in enumerate(tqdm_(outputs))
+        for t, o in enumerate(tqdm_(output))
         for mask in o['instances'].pred_masks.to('cpu')
     ])
     
     return clusters.labels_, coordinates
 
-def cluster_cells_grid(outputs, param_grid, dmax=5, progress=False):
-    distances = get_distances(outputs, dmax=dmax, progress=progress)
+def cluster_cells_grid(output, param_grid, dmax=5, progress=False):
+    '''
+    Adds an option to run a grid search to the cluster_cells function 
+    for hyperparameter tuning of epsilon and min_samples.
+    Parameters
+    ----------
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    param_grid : dict
+        DESCRIPTION.
+    dmax : int, optional
+        The maximum frame distance to look ahead and behind to calculate 
+        the interframe IOUs between the cells. The default is 5.
+    progress : bool, optional
+        The default is False.
+    Returns
+    -------
+    clusters_labels : list
+        Outcomes of DBSCAN clustering for each evaluation.
+    dbscan_params : list
+        Parameters corresponding to each evaluation.
+    coordinates : ndarray
+        Coordinates of centroid of individual instances with 2 dimensions
+        (labels, ([time, Y, X])).
+    '''
+    distances = get_distances(output, dmax=dmax, progress=progress)
     tqdm_ = tqdm if progress else (lambda x: x)
     clusters_labels = []
     dbscan_params = []  
@@ -108,14 +156,40 @@ def cluster_cells_grid(outputs, param_grid, dmax=5, progress=False):
             
     coordinates = np.array([
         (t, ) + tuple(map(np.mean, np.where(mask)))
-        for t, o in enumerate(tqdm_(outputs))
+        for t, o in enumerate(tqdm_(output))
         for mask in o['instances'].pred_masks.to('cpu')
     ])
 
     return clusters_labels, dbscan_params, coordinates
 
-def cluster_cells_random(outputs, param_grid, dmax=5, evals=20, progress=False):
-    distances = get_distances(outputs, dmax=dmax, progress=progress)
+def cluster_cells_random(output, param_grid, dmax=5, evals=20, progress=False):
+    '''
+    Adds an option to run a randomized search to the cluster_cells function.
+    Parameters
+    ----------
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    param_grid : dict
+        DESCRIPTION.
+    dmax : int, optional
+        The maximum frame distance to look ahead and behind to calculate 
+        the interframe IOUs between the cells. The default is 5.
+    evals : int, optional
+        Number of evaluations to run by randomly choosing hyperparameter 
+        settings from the parameter grid. The default is 20.
+    progress : bool, optional
+        The default is False.
+    Returns
+    -------
+    clusters_labels : list
+        Outcomes of DBSCAN clustering for each evaluation.
+    dbscan_params : list
+        Parameters corresponding to each evaluation.
+    coordinates : ndarray
+        Coordinates of centroid of individual instances with 2 dimensions
+        (labels, ([time, Y, X])).
+    '''
+    distances = get_distances(output, dmax=dmax, progress=progress)
     tqdm_ = tqdm if progress else (lambda x: x)
     clusters_labels = []
     dbscan_params = []  
@@ -134,31 +208,8 @@ def cluster_cells_random(outputs, param_grid, dmax=5, evals=20, progress=False):
             
     coordinates = np.array([
         (t, ) + tuple(map(np.mean, np.where(mask)))
-        for t, o in enumerate(tqdm_(outputs))
+        for t, o in enumerate(tqdm_(output))
         for mask in o['instances'].pred_masks.to('cpu')
     ])
 
     return clusters_labels, dbscan_params, coordinates
-
-def compare_clusters(gt, pred, coordinates): #loop with clusters_labels output #YM
-    if -1 in gt:
-        gt=gt+1
-    if -1 in pred:
-        pred=pred+1
-    labels = set(gt)|set(pred) 
-    counts=Counter(zip(gt, pred))
-    cost_matrix=np.zeros([max(labels)+1,max(labels)+1])
-    for (i, j), cost in counts.items(): cost_matrix[i, j] = -cost
-    row,col,_=lapjv(cost_matrix)
-    overlap = gt[(col[pred]==gt)]
-    idx_overlap = np.where(col[pred]==gt)[-1] 
-    coord_overlap = coordinates[idx_overlap,:]
-    no_overlap = gt[(col[pred]!=gt)] 
-    idx_no_overlap = np.where(col[pred]!=gt)[-1]
-    coord_no_overlap = coordinates[idx_no_overlap,:]
-    overlap_mean=(col[pred]==gt).mean()*100
-
-    return overlap_mean, {
-        'overlap': overlap, 'coordinates_overlap': coord_overlap, 
-        'no_overlap': no_overlap, 'coordinates_no_overlap': coord_no_overlap
-    }

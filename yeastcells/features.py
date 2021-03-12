@@ -82,27 +82,19 @@ def get_instance_numbers(output):
     inst_num : ndarray
         Array of unique cell number assigned to each cell within a frame 
         containing data with int type.
-    coordinates : ndarray
-        2D array of centroid coordinates individual cells
-        (labels, ([time, Y, X])). ym is this needed?
     '''
     o = list(map(existance_vectors, output))
     inst_num = np.array([], dtype=int)
     for f in range(len(o)):
         instance = len(o[f])
         tmp = np.arange(instance)
-        inst_num = np.hstack((inst_num,tmp))
-    
-    coordinates = np.array([
-        (t, ) + tuple(map(np.mean, np.where(mask)))
-        for t, o in enumerate(output)
-        for mask in o['instances'].pred_masks.to('cpu')
-    ])    
+        inst_num = np.hstack((inst_num,tmp))   
         
-    return inst_num, coordinates    
+    return inst_num    
 
 def group(labels, output):
     '''
+    Groups the labels by the frame in which they appear.
     Parameters
     ----------
     labels : ndarray
@@ -121,6 +113,24 @@ def group(labels, output):
     ]
 
 def get_seg_track(labels, output, frame=None):
+    '''
+    Gets the total number of segmentations and tracks in a time-series.
+    Frame number can be set to get information from one frame.
+    Parameters
+    ----------
+    labels : ndarray
+        Tracking labels of individual cells.
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    frame : int, optional
+        Sets frame number. The default is None.
+    Returns
+    -------
+    segs : int
+        Represents number of segmentations.
+    tracks : int
+        Represents number of tracked cells.
+    '''
     if frame is None:
         segs = print('The number of segmentations is ' + str(len(labels)))
         tracks = print(
@@ -141,15 +151,53 @@ def get_seg_track(labels, output, frame=None):
     return segs, tracks
 
 def track_len(labels, label = 0):
+    '''
+    Gets the length of a selected label ('track').
+    Parameters
+    ----------
+    labels : ndarray
+        Tracking labels of individual cells.
+    label : int, optional
+        Select label of interest. The default is 0.
+    Returns
+    -------
+    int
+        Track length.
+    '''
     counts = Counter(labels)
+    
     return counts[label]
 
 def get_distance(p1, p2): 
+    '''
+    Calculate distance between 2 coordinate points. 
+    Parameters
+    ----------
+    p1 : TYPE
+        x and y coordinates of first point.
+    p2 : TYPE
+        x and y coordinates of second point.
+    Returns
+    -------
+    distance : float
+        DESCRIPTION.
+    '''
     distance = math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
     
     return distance
 
 def get_masks(output):
+    '''
+    Extract masks of segmented cells from detectron2 predictor output.
+    Parameters
+    ----------
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    Returns
+    -------
+    masks : ndarray 
+        3D binary mask array of segmented cells containing data with int type.
+    '''
     masks = [
         m for i in output for m in np.array(
         i['instances'].pred_masks.to('cpu'), dtype=int
@@ -158,6 +206,20 @@ def get_masks(output):
     return masks
 
 def get_areas(masks, labels):
+    '''
+    Get area of masks in pixels by summing bitmap.
+    Parameters
+    ----------
+    masks : ndarray 
+        3D binary mask array of segmented cells containing data with int type.
+    labels : ndarray
+        Tracking labels of individual cells.
+    Returns
+    -------
+    mask_areas : ndarray
+        Array with pixel area values for each mask containing data 
+        with float type.
+    '''
     mask_areas =np.zeros((len(labels)),dtype=float)
     n=0
     for lab in labels:
@@ -167,6 +229,23 @@ def get_areas(masks, labels):
     return mask_areas
 
 def get_average_growth_rate(mask_areas, labels, output):
+    '''
+    Calculate average growth rate of tracked cells.
+    Parameters
+    ----------
+    mask_areas : ndarray
+        Array with pixel area values for each mask containing data 
+        with float type.
+    labels : ndarray
+        Tracking labels of individual cells.
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    Returns
+    -------
+    agr : ndarray
+        Average growth rate for each tracked cell in array containing data 
+        with float type.
+    '''
     agr = np.zeros((len(np.unique(labels)),2),dtype=float)
     for l in range(0,max(labels)+1): 
         idx = np.where(labels == l)[0]
@@ -176,7 +255,21 @@ def get_average_growth_rate(mask_areas, labels, output):
 
     return agr
         
-def get_area_std(labels, pred_df):    
+def get_area_std(labels, pred_df): 
+    '''
+    Calculate the standard deviation of the area profile of tracked cells.
+    Parameters
+    ----------
+    labels : ndarray
+        Tracking labels of individual cells.
+    pred_df : pd.DataFrame
+        Dataframe containing segmentation and tracking results.
+    Returns
+    -------
+    area_std : ndarray
+        Array of area standard deviation values for each track containing data 
+        with float type.
+    '''
     area_std = np.zeros((len(np.unique(labels)),2),dtype=float)
     for l in range(0,max(labels)+1):
         area_std[l,0] = l
@@ -187,7 +280,22 @@ def get_area_std(labels, pred_df):
     
     return area_std
     
-def get_position_std(labels, pred_df):     
+def get_position_std(labels, pred_df):  
+    '''
+    Calculate the standard deviation of the centroid positions 
+    of tracked cells.
+    Parameters
+    ----------
+    labels : ndarray
+        Tracking labels of individual cells.
+    pred_df : pd.DataFrame
+        Dataframe containing segmentation and tracking results.
+    Returns
+    -------
+    position_std : ndarray
+        Array of position standard deviation values for each track containing 
+        data with float type.
+    '''
     position_std = np.zeros((len(np.unique(labels)),2),dtype=float)
     for l in range(0,max(labels)+1):  
         points_xy = np.array(
@@ -203,6 +311,23 @@ def get_position_std(labels, pred_df):
     return position_std
 
 def get_pixel_intensity(masks, output, im):
+    '''
+    Get the pixel intensity inside a mask overlayed on images from 
+    a flourescent channel.
+    Parameters
+    ----------
+    masks : ndarray 
+        3D binary mask array of segmented cells containing data with int type.
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    im : ndarray
+        4D array containing data with int type.
+    Returns
+    -------
+    pi : ndarray
+        Pixel intensity values for each mask in an array containing data with 
+        type. ym
+    '''
     masks_ = group(masks, output)
     pi = [
         np.sum(im[frame][masks_[frame][i]==1]) 
@@ -211,13 +336,13 @@ def get_pixel_intensity(masks, output, im):
     
     return pi
 
-def extract_labels(masks):
+def extract_labels(masks_nb):
     '''
-    Extract labels from masks with multiple cells per mask.
+    Extract labels from non-binary masks with multiple cells per mask.
     Parameters
     ----------
-    masks : ndarray
-        3D mask array (frames, length, width) containing data of int type. ym
+    masks_nb : ndarray
+        3D mask array (frames, length, width) containing data of int type.
     Returns
     -------
     labels : ndarray
@@ -231,16 +356,16 @@ def extract_labels(masks):
         2D mask array for each labeled cell. ym
     '''
     labels_grouped=[]            
-    for i in range(len(masks)):
-        label = np.unique(masks[i])[1:]
+    for i in range(len(masks_nb)):
+        label = np.unique(masks_nb[i])[1:]
         labels_grouped.append(label)
     instance = np.cumsum([0] + [len(l) for l in labels_grouped])
     instances = np.zeros(
-        (instance.max(), np.array(np.shape(masks[i][0])).item(),np.array(
-            np.shape(masks[i][1])).item())
+        (instance.max(), np.array(np.shape(masks_nb[i][0])).item(),np.array(
+            np.shape(masks_nb[i][1])).item())
     )
     i = 0
-    for mask,label in zip(masks,labels_grouped):
+    for mask,label in zip(masks_nb,labels_grouped):
         for n in label:
             instances[i] = (mask==n).astype(int)
             i+=1
