@@ -5,8 +5,8 @@ setup(
       name='yeastcells',
       version=__import__('yeastcells').__version__,
       
-      description='Computer vision based yeast cell detection.',
-      long_description='Yeast cell detection using a deep convolutional network to detect cells, and classic computer vision, DBSCAN clustering and machine learning is used for tracking. Current state allows detection of cells, clustering over time to determine which are the same cell, finding cell boudnary using seam carving and pruning false positives.',
+      description='Computer vision based yeast cell detection and tracking pipeline.',
+      long_description='Yeast cell detection using a deep convolutional network to detect cells, and classic computer vision, DBSCAN clustering and machine learning is used for tracking. Current state allows detection of cells, clustering over time to determine which are the same cell, finding cell boudnaries, plotting segmented and tracked cells in figures and animations, and outputting masks and their area, position, and pixel intensity.',
 
       url='https://git.web.rug.nl/P301081/yeastcells-detection-maskrcnn/',
       

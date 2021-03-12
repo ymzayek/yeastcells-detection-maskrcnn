@@ -19,12 +19,13 @@ def load_model(model_path, seg_thresh=0.94, device='cpu'):
         less segmentations, particularly of small buds, 
         while decrasing the score can lead to false positives.
     device : str, optional
-        Can be set to a gpu or cpu depending on availability. 
+        Can be set to a GPU or CPU depending on availability. 
         The default is 'cpu'.
     Returns
     -------
-    predictor : TYPE
-        DESCRIPTION.
+    predictor : DefaultPredictor
+        Detectron2 predictor class object that takes one BGR image as input 
+        and produces one output.
     '''
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(

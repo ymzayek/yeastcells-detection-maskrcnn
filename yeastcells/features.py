@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 from collections import Counter
 import math
-from .clustering import existance_vectors
 
 def extract_contours(output):
     '''
@@ -66,32 +65,6 @@ def get_centroids(labels, coordinates):
     
     return centroids
 
-def get_instance_numbers(output):
-    '''
-    Each segmented cell gets a unique number per frame. 
-    This is not the same as the tracking labels since 
-    the numbers are unique within a frame but are not 
-    consistent for one cell across frames. It serves
-    more as a count of cells in each frame.
-    Parameters
-    ----------
-    output : dict
-        Detecron2 predictor output from the detecron2 Mask R-CNN model.
-    Returns
-    -------
-    inst_num : ndarray
-        Array of unique cell number assigned to each cell within a frame 
-        containing data with int type.
-    '''
-    o = list(map(existance_vectors, output))
-    inst_num = np.array([], dtype=int)
-    for f in range(len(o)):
-        instance = len(o[f])
-        tmp = np.arange(instance)
-        inst_num = np.hstack((inst_num,tmp))   
-        
-    return inst_num    
-
 def group(labels, output):
     '''
     Groups the labels by the frame in which they appear.
@@ -111,6 +84,33 @@ def group(labels, output):
         labels[a:b]
         for a, b in zip(boundaries, boundaries[1:])
     ]
+
+
+def get_instance_numbers(output):
+    '''
+    Each segmented cell gets a unique number per frame. 
+    This is not the same as the tracking labels since 
+    the numbers are unique within a frame but are not 
+    consistent for one cell across frames. It serves
+    more as a count of cells in each frame.
+    Parameters
+    ----------
+    output : dict
+        Detecron2 predictor output from the detecron2 Mask R-CNN model.
+    Returns
+    -------
+    inst_num : ndarray
+        Array of unique cell number assigned to each cell within a frame 
+        containing data with int type.
+    '''
+    o = group(output,output)
+    inst_num = np.array([], dtype=int)
+    for f in range(len(o)):
+        instance = len(o[f])
+        tmp = np.arange(instance)
+        inst_num = np.hstack((inst_num,tmp))   
+        
+    return inst_num    
 
 def get_seg_track(labels, output, frame=None):
     '''
@@ -170,17 +170,17 @@ def track_len(labels, label = 0):
 
 def get_distance(p1, p2): 
     '''
-    Calculate distance between 2 coordinate points. 
+    Calculate Euclidean distance between 2 points. 
     Parameters
     ----------
-    p1 : TYPE
+    p1 : tuple or ndarray
         x and y coordinates of first point.
-    p2 : TYPE
+    p2 : tuple or ndarray
         x and y coordinates of second point.
     Returns
     -------
     distance : float
-        DESCRIPTION.
+        Distance value.
     '''
     distance = math.sqrt(((p1[0]-p2[0])**2)+((p1[1]-p2[1])**2))
     
@@ -324,9 +324,9 @@ def get_pixel_intensity(masks, output, im):
         4D array containing data with int type.
     Returns
     -------
-    pi : ndarray
+    pi : list
         Pixel intensity values for each mask in an array containing data with 
-        type. ym
+        int type.
     '''
     masks_ = group(masks, output)
     pi = [
@@ -342,7 +342,7 @@ def extract_labels(masks_nb):
     Parameters
     ----------
     masks_nb : ndarray
-        3D mask array (frames, length, width) containing data of int type.
+        3D mask array (frames, length, width) with int type.
     Returns
     -------
     labels : ndarray
@@ -353,7 +353,7 @@ def extract_labels(masks_nb):
         2D array of centroid coordinates individual cells
         (labels, ([time, Y, X])).  
     instances : ndarray
-        2D mask array for each labeled cell. ym
+        Array of binary masks for each labeled cell.
     '''
     labels_grouped=[]            
     for i in range(len(masks_nb)):

@@ -68,7 +68,7 @@ def create_scene(
     Parameters
     ----------
     frames : ndarray
-        4D array containing data with int type representing time-series images.
+        4D array with int type representing time-series images.
     output : dict
         Predictor output from the detecron2 model.
     labels : ndarray
@@ -96,7 +96,7 @@ def create_scene(
     Returns
     -------
     canvas : ndarray
-        4D array containing data with int type representing time-series images.
+        4D array with int type representing time-series images.
     '''
     canvas = frames.copy()
   
@@ -168,7 +168,7 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
     Parameters
     ----------
     scene : ndarray
-        4D array containing data with int type representing time-series images.
+        4D array with int type representing time-series images.
     coordinates : ndarray
         Coordinates of centroid of individual instances with 2 dimensions
         (labels, ([time, Y, X])).
@@ -183,7 +183,7 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
     Returns
     -------
     ndarray
-        4D array containing data with int type representing time-series images.
+        4D array with int type representing time-series images.
     '''
     label = l
     z, y, x = coordinates[labels == label].T 
@@ -199,7 +199,7 @@ def show_animation(scene, title=None, delay = 500):
     Parameters
     ----------
     scene : ndarray
-        4D array containing data with int type representing time-series images.
+        4D array with int type representing time-series images.
     title : str, optional
         Set figure title. The default is None.
     delay : int, optional

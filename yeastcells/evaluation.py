@@ -11,9 +11,9 @@ def get_seg_performance(pred_s, gt_s, output, pipeline='maskrcnn'):
     Parameters
     ----------
     pred_s : ndarray
-        Segmentation prediction data array containing data with int type.
+        Segmentation prediction data array with int type.
     gt_s : ndarray
-        Segmentation ground truth data array containing data with int type.
+        Segmentation ground truth data array with int type.
     output : dict
         Detecron2 predictor output from the detecron2 Mask R-CNN model.
     pipeline : str, optional
@@ -65,9 +65,9 @@ def get_track_performance(pred_t, gt_t, output, pipeline='maskrcnn'):
     Parameters
     ----------
     pred_t : ndarray
-        Tracking prediction data array containing data with int type.
+        Tracking prediction data array with int type.
     gt_t : ndarray
-        Tracking ground truth data array containing data with int type.
+        Tracking ground truth data array with int type.
     output : dict
         Detecron2 predictor output from the detecron2 Mask R-CNN model.
     pipeline : str, optional

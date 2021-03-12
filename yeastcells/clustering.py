@@ -7,6 +7,7 @@ import random
 
 def existance_vectors(output):
     '''
+    Converts image matrix into 1D vector for each segmented cell.
     Parameters
     ----------
     output : dict
@@ -14,23 +15,25 @@ def existance_vectors(output):
     Returns
     -------
     ndarray
-        .
+        Array of vectors containing data of float type.
     '''
     o = np.array(output['instances'].pred_masks.to('cpu'))
     return o.reshape(o.shape[0], -1).astype(np.float32)
 
 def calc_iou(outputs0, outputs1):
     '''
+    Calculate the intersection-over-union (IOU) between cells 
+    in a pair of frames.
     Parameters
     ----------
-    outputs0 : TYPE
-        DESCRIPTION.
-    outputs1 : TYPE
-        DESCRIPTION.
+    outputs0 : ndarray
+        Array of vectors with float type.
+    outputs1 : ndarray
+        Array of vectors with float type.
     Returns
     -------
-    iou : TYPE
-        DESCRIPTION.
+    iou : ndarray
+        Array of IOU values with float type.
     '''
     overlaps = np.dot(outputs0, outputs1.T)
     szi, szj = outputs0.sum(1), outputs1.sum(1)
@@ -41,9 +44,10 @@ def calc_iou(outputs0, outputs1):
 
 def get_distances(outputs, dmax=5, progress=False):
     '''
-    Build a COO matrix of distances based on calculating the IOUs between 
-    all cell instances from one frame to another. This distance matrix is 
-    passed to DBSCAN for clustering the cells into tracks.
+    Build a sparse matrix of distances based on calculating 
+    the IOUs between all cell instances from one frame to another. 
+    This distance matrix is passed to DBSCAN for clustering 
+    the cells into tracks.
     Parameters
     ----------
     output : dict
@@ -55,8 +59,8 @@ def get_distances(outputs, dmax=5, progress=False):
         The default is False.
     Returns
     -------
-    TYPE
-        DESCRIPTION.
+    coo_matrix
+        2D sparse matrix of distances in COOrdinate format.
     '''
     tqdm_ = tqdm if progress else (lambda x: x)
     offsets = np.cumsum([0] + [len(o['instances']) for o in outputs])
@@ -87,12 +91,12 @@ def cluster_cells(output, dmax=5, min_samples=3, eps=0.6, progress=False):
     output : dict
         Detecron2 predictor output from the detecron2 Mask R-CNN model.
     dmax : int, optional
-        The maximum frame distance to look ahead and behind to calculate 
+        Set the maximum frame distance to look ahead and behind to calculate 
         the interframe IOUs between the cells. The default is 5.
     min_samples : int, optional
-        Parameter of DBSCAN. The default is 3. ym
+        Set minimum samples hyperparameter of DBSCAN.. The default is 3. 
     eps : float, optional
-        Parameter of DBSCAN. The default is 0.6. ym
+        Set epsilon hyperparameter of DBSCAN. The default is 0.6. 
     progress : bool, optional
         The default is False.
     Returns
@@ -125,7 +129,8 @@ def cluster_cells_grid(output, param_grid, dmax=5, progress=False):
     output : dict
         Detecron2 predictor output from the detecron2 Mask R-CNN model.
     param_grid : dict
-        DESCRIPTION.
+        Contains list of a range of values for hyperparameters 
+        'eps' and 'min_samples'.
     dmax : int, optional
         The maximum frame distance to look ahead and behind to calculate 
         the interframe IOUs between the cells. The default is 5.
@@ -170,7 +175,8 @@ def cluster_cells_random(output, param_grid, dmax=5, evals=20, progress=False):
     output : dict
         Detecron2 predictor output from the detecron2 Mask R-CNN model.
     param_grid : dict
-        DESCRIPTION.
+        Contains list of a range of values for hyperparameters 
+        'eps' and 'min_samples'.
     dmax : int, optional
         The maximum frame distance to look ahead and behind to calculate 
         the interframe IOUs between the cells. The default is 5.

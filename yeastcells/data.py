@@ -4,7 +4,7 @@ import pandas as pd
 from skimage.io import imread
 from PIL import Image
 import os
-from .clustering import existance_vectors
+from .features import group 
 
 def load_data(path, ff = ''):
     '''
@@ -51,7 +51,7 @@ def read_image(fn, time_series=True, channel=1, flourescent=False):
     Returns
     -------
     ndarray
-        4D array containing data with int type.
+        4D array with int type.
     '''
     image = imread(fn)
     #image = np.rollaxis(image,1,4)
@@ -89,7 +89,7 @@ def read_images_cat(fns):
     Returns
     -------
     ndarray
-        4D array containing data with int type.
+        4D array with int type.
     '''
     image=[]
     image=[imread(i) for i in list(fns)]
@@ -109,7 +109,7 @@ def read_tiff_mask(path):
     Returns
     -------
     masks_nb : ndarray 
-        3D mask array containing data with int type.
+        3D mask array with int type.
     '''
     img = Image.open(path)
     masks_nb = []
@@ -132,9 +132,9 @@ def get_gt_yit(seg_path, track_path):
     Returns
     -------
     gt_s : ndarray
-        Segmentation ground truth data array containing data with int type.
+        Segmentation ground truth data array with int type.
     gt_t : ndarray
-        Tracking ground truth data array containing data with int type.
+        Tracking ground truth data array with int type.
     '''
     gt_s_df=pd.read_csv(f'{seg_path}')
     gt_t_df=pd.read_csv(f'{track_path}')
@@ -170,9 +170,9 @@ def get_pred(output, labels, coordinates, ti=3, start=1):
     Returns
     -------
     pred_s : ndarray
-        Segmentation prediction data array containing data with int type.  
+        Segmentation prediction data array with int type.  
     pred_t : ndarray
-        Tracking prediction data array containing data with int type.
+        Tracking prediction data array with int type.
     pred_df : pd.DataFrame
         Dataframe containing segmentation and tracking results with columns:
             =============  ==================================================
@@ -185,7 +185,7 @@ def get_pred(output, labels, coordinates, ti=3, start=1):
             Position_Y     The y coordinate of a given cell centroid.
             =============  ==================================================
     '''
-    o = list(map(existance_vectors, output))
+    o = group(labels,output)
     pred_s= np.zeros(((len(labels),4))).astype(int)
     cell_num = np.array([], dtype=int)
     time_min = []
@@ -233,9 +233,9 @@ def get_pred_yeaz(labels, labels_grouped, coordinates):
     Returns
     -------
     pred_s : ndarray
-        Segmentation prediction data array containing data with int type    
+        Segmentation prediction data array with int type    
     pred_t : ndarray
-        Tracking prediction data array containing data with int type.       
+        Tracking prediction data array with int type.       
     '''
     pred_s= np.zeros(((len(labels),4))).astype(int)
     i=0
