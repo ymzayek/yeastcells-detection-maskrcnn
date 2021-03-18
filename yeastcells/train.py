@@ -59,10 +59,12 @@ def validate_labels(labels, path):
                 if len(ann['segmentation'][0]) >= 6
             ]
             assert len(label['annotations']) > 0
+            label['file_name'] = path + '/' + label['file_name']
 
     for k in labels:
         labels[k] = [
-            label for label in labels[k] if os.path.exists(label['file_name'])
+            label for label in labels[k]
+            if os.path.exists(label['file_name'])
         ]
     return labels
 
