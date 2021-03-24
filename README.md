@@ -17,6 +17,16 @@
 * To implement an automatic segmentation pipeline using this network.
 * To track cells across time frames
 
+
+
+# Gest started on Google Colab
+
+ * [![Create synthetic data set](https://colab.research.google.com/assets/colab-badge.svg) Create synthetic data set](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/create_synthetic_dataset_for_training.ipynb)
+ * [![Train model on synthetic data](https://colab.research.google.com/assets/colab-badge.svg) Train model on synthetic data](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/train_mask_rcnn_network.ipynb)
+ * [![Example cell detection](https://colab.research.google.com/assets/colab-badge.svg) Example cell detection](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/example_pipeline.ipynb)
+ * [![Evaluate performance](https://colab.research.google.com/assets/colab-badge.svg) Evaluate our performance](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/eval_calibration.ipynb)
+ * [![Evaluate performance](https://colab.research.google.com/assets/colab-badge.svg) Evaluate performance of YeaZ](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/YeaZ_evaluation.ipynb)
+
 # Implementation
 
 For creating the synthetic data set and training the network see the notebooks [create_synthetic_dataset_for_training](https://github.com/ymzayek/yeastcells-detection-maskrcnn/blob/main/notebooks/create_synthetic_dataset_for_training.ipynb) and [train_mask_rcnn_network](https://github.com/ymzayek/yeastcells-detection-maskrcnn/blob/main/notebooks/train_mask_rcnn_network.ipynb).
