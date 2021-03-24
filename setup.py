@@ -5,18 +5,17 @@ setup(
       name='yeastcells',
       version=__import__('yeastcells').__version__,
       
-      description='Computer vision based yeast cell detection and tracking pipeline.',
-      long_description='Yeast cell detection using a deep convolutional network to detect cells, and classic computer vision, DBSCAN clustering and machine learning is used for tracking. Current state allows detection of cells, clustering over time to determine which are the same cell, finding cell boudnaries, plotting segmented and tracked cells in figures and animations, and outputting masks and their area, position, and pixel intensity.',
+      description='Computer vision based yeast cell synthetic data creation and network training, and detection and tracking pipeline.',
+      long_description='Yeast cell detection using a deep convolutional network trained on synthetic data to detect, segment, and track cells. Current state allows segmentation of cells, clustering over time to determine which are the same cell, finding cell boudnaries, plotting segmented and tracked cells in figures and animations, and outputting masks and their area, position, and pixel intensity.',
 
-      url='https://git.web.rug.nl/P301081/yeastcells-detection-maskrcnn/',
+      url='https://github.com/ymzayek/yeastcells-detection-maskrcnn/',
       
       author='Herbert Kruitbosch, Yasmin Mzayek',
       author_email='H.T.Kruitbosch@rug.nl, y.mzayek@rug.nl',
-      license='Only for use within the University of Groningen and only with permission from the authors.',
+      license='',
       
       classifiers=[
         'Development Status :: 4 - Beta',
-        'License :: Only with authors permission',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.7',
       ],
@@ -36,10 +35,7 @@ setup(
         'Shapely>=1.7.0'
         'tqdm>=4.48.2'
       ],
-      extras_require={
-        'dev': [],
-        'test': [],
-      },
+
       zip_safe=False,
 )
 

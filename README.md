@@ -1,6 +1,6 @@
-# Yeast Cell Segmentation and Tracking Pipeline
+# Deep learning pipeline for yeast cell segmentation and tracking 
 
-Automatic segmentation and tracking of budding yeast cells in time-series brightfield microscopy images using a mask R-CNN
+ In this pipeline we created synthetic brightfield images of yeast cells and trained a mask R-CNN model on them. Then we used the trained network on real time-series brightfield microscopy data to automaticly segment and track budding yeast cells.
 
 # Participants
 
@@ -13,20 +13,22 @@ Automatic segmentation and tracking of budding yeast cells in time-series bright
 # Project description
 
 **Goals** 
-* To implement an automatic segmentation pipeline using a mask R-CNN trained on synthetic brightfield data. 
-* To track cells across time frames using DBSCAN clustering based on intersection-over-union
-
-See https://github.com/prhbrt/synthetic-yeast-cells for the synthetic training data toolkit used to train the mask R-CNN.
+* To create synthetic image data to train a deep convolutional neural network
+* To implement an automatic segmentation pipeline using this network.
+* To track cells across time frames
 
 # Implementation
 
-To run the Mask R-CNN, you need to install the [Detecron2 library](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). For a guide to a Window's installation see these [instructions](https://ivanpp.cc/detectron2-walkthrough-windows/). You also need to request the model file with the weights trained from the synthetic data from the authors.
+For creating the synthetic data set and training the network see the notebooks [create_synthetic_dataset_for_training](https://github.com/ymzayek/yeastcells-detection-maskrcnn/blob/main/notebooks/create_synthetic_dataset_for_training.ipynb) and [train_mask_rcnn_network](https://github.com/ymzayek/yeastcells-detection-maskrcnn/blob/main/notebooks/train_mask_rcnn_network.ipynb).
 
-See example [pipeline notebook](https://git.webhosting.rug.nl/P301081/yeastcells-detection-maskrcnn/src/branch/master/notebooks/example_pipeline.ipynb).
-The example pipeline gives segmentation and tracking results of brightfield time-lapse yeast microscopy.
+For segmentation and tracking on real data see [example pipeline](https://github.com/ymzayek/yeastcells-detection-maskrcnn/tree/main/notebooks/example_pipeline.ipynb) notebook.
+
+All the notebooks can be run on Google Colab and automatically install and download all needed dependencies and data.   
+
+<sup></sub>(To run the Mask R-CNN locally, you will need to install the [Detecron2 library](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). For a guide to a Window's installation see these [instructions](https://ivanpp.cc/detectron2-walkthrough-windows/). You also need to download the trained model file from https://datascience.web.rug.nl/models/yeast-cells/mask-rcnn/v1/model_final.pth)<sub></sup>
 
 **Segmentation** 
-* **Input** Brightfield time-lapse images. The source file is a multi-image tiff. (For reading multiple single-image tiffs and concatenating them use `data.read_image_cat` function instead). 
+* **Input** Brightfield time-lapse images. The source file is either a multi-image tiff or multiple single-image tiffs. 
 
 * **Output** The `output` variable is a dictionary that provides a prediction box, prediction score, and a prediction mask for each instance segmentation in each frame. You can access the prediction masks by `np.array(output[<frame>]['instances'].pred_masks.to('cpu'))`.
 
@@ -99,9 +101,7 @@ This pipeline allows you to extract information about the detected yeast cells i
 
 <br>
 
-Further, you can get the average growth rate and the standard deviation of the area and position of the tracked cells. These features can possibly be used in future work for false positive removal and differentiating between mother and daughter cells.
-
-Finally, if a flourescent channel is available, the pixel intensity of within each cell can also be calculated using the masks segmented on the brightfield images.
+Further, if a flourescent channel is available, the pixel intensity of within each cell can also be calculated using the masks segmented on the brightfield images.
 
 <table>
   <tr>	
@@ -118,7 +118,7 @@ Finally, if a flourescent channel is available, the pixel intensity of within ea
 
 # Evaluation
 
-See [evaluation notebook](https://git.webhosting.rug.nl/P301081/yeastcells-detection-maskrcnn/src/branch/master/notebooks/example_evaluation.ipynb). 
+See [eval_calibration](https://github.com/ymzayek/yeastcells-detection-maskrcnn/blob/main/notebooks/eval_calibration.ipynb) and [YeaZ_evaluation](https://github.com/ymzayek/yeastcells-detection-maskrcnn/blob/main/notebooks/YeaZ_evaluation.ipynb). 
 
 We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](http://yeast-image-toolkit.biosim.eu/) (YIT) (Versari et al., 2017). On this platform, several exisiting pipelines have been evaluated for their segmentation and tracking performance. We tested our pipeline and that of YeaZ (Dietler et al., 2020) on several test sets from this platform. 
 
@@ -176,11 +176,3 @@ In the table below, we report the performance metrics for each test set for both
 </table> 
 
 <br>
-
-# Future work
-### **False positive removal**
-False positives can appear in the microscopy images due to several reasons, such as trapped dirt or dust or the presence of dead cells. To control for this we will set up a random forest trained on several features of the yeast cells. This will allow us to automatically remove false positives from the segmentation output. It could also support the setting of a standard and low segmentation threshold score that will allow for many false positives, which can then be easily removed. This would standardize the process of searching for the best threshold to use for segmentation and ensure that a too strict threshold that would miss true positives is not chosen. For this step, however, we need labeled training data, which can potentially be set up through the synthetic training data toolkit.
-
-### **Geneology**
-We are also working on implementing a feature to differentiate between mother and daughter cells and to map the daughters to their mothers throughout the time-series. 
-
