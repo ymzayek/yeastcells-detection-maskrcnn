@@ -4,11 +4,11 @@
 
 # Participants
 
-* Dr Andreas Milias Argeitis, principal investigator, University of Groningen, Faculty of Science and Engineering
-* MSc Paolo Guerra, second principal investigator, University of Groningen, Faculty of Science and Engineering
 * MSc Herbert Teun Kruitbosch, data scientist, University of Groningen, Data science team
 * MSc Yasmin Mzayek, IT trainee, University of Groningen, Data Science trainee
 * MA Sara Omlor, IT trainee, University of Groningen, Data Science trainee
+* MSc Paolo Guerra, PHD student, University of Groningen, Faculty of Science and Engineering
+* Dr Andreas Milias Argeitis, principal investigator, University of Groningen, Faculty of Science and Engineering
 
 # Project description
 
@@ -17,9 +17,7 @@
 * To implement an automatic segmentation pipeline using this network.
 * To track cells across time frames
 
-
-
-# Gest started on Google Colab
+# Get started on Google Colab
 
  * [![Create synthetic data set](https://colab.research.google.com/assets/colab-badge.svg) Create synthetic data set](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/create_synthetic_dataset_for_training.ipynb)
  * [![Train model on synthetic data](https://colab.research.google.com/assets/colab-badge.svg) Train model on synthetic data](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/train_mask_rcnn_network.ipynb)
@@ -35,7 +33,7 @@ For segmentation and tracking on real data see [example pipeline](https://github
 
 All the notebooks can be run on Google Colab and automatically install and download all needed dependencies and data.   
 
-<sup></sub>(To run the Mask R-CNN locally, you will need to install the [Detecron2 library](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). For a guide to a Window's installation see these [instructions](https://ivanpp.cc/detectron2-walkthrough-windows/). You also need to download the trained model file from https://datascience.web.rug.nl/models/yeast-cells/mask-rcnn/v1/model_final.pth)<sub></sup>
+<sub>(To run the Mask R-CNN locally, you will need to install the [Detecron2 library](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). For a guide to a Window's installation see these [instructions](https://ivanpp.cc/detectron2-walkthrough-windows/). You also need to download the trained model file from https://datascience.web.rug.nl/models/yeast-cells/mask-rcnn/v1/model_final.pth)</sub>
 
 **Segmentation** 
 * **Input** Brightfield time-lapse images. The source file is either a multi-image tiff or multiple single-image tiffs. 
@@ -92,7 +90,7 @@ This pipeline allows you to extract information about the detected yeast cells i
     </td>
   </tr>
     <tr>
-    <td>Figure 3. A mother/daughter pair of masks are overlayed over the original brightfield image.</td>
+    <td>Figure 3. A mother/daughter pair of masks are overlayed on the original brightfield image.</td>
   </tr>
 </table>
 
