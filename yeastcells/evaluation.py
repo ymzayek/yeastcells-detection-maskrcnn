@@ -3,6 +3,7 @@ import numpy as np
 import copy
 from collections import Counter
 
+
 def get_seg_performance(pred_s, gt_s, output, pipeline='maskrcnn'):
     '''
     For evaluating segmentation performance on benchmark data from 
@@ -56,6 +57,7 @@ def get_seg_performance(pred_s, gt_s, output, pipeline='maskrcnn'):
         "tp": tp, "fp": fp, "fn": fn, 
         "join": len(join), "split": len(split)
     }
+
 
 def get_track_performance(pred_t, gt_t, output, pipeline='maskrcnn'):
     '''
@@ -124,6 +126,7 @@ def get_track_performance(pred_t, gt_t, output, pipeline='maskrcnn'):
         "join": join, "split": split
     }
 
+
 def calculate_metrics(results, pred, gt):
     '''
     Calculate 4 standard performance metrics using performance indicators.
@@ -152,3 +155,119 @@ def calculate_metrics(results, pred, gt):
         'F1-score': F, 'Accuracy': accuracy, 
         'Precision': precision, 'Recall': recall
     }
+
+
+def match_detections_and_ground_truths(ground_truths, detections, masks):
+  """Considering ground truth coordinates versus segmentation masks,
+  yields tuples (ground_truth_index, detection_index) for every
+  ground truth sample and detection in the same frame, such that the
+  ground truth (x, y) coordinate matches the mask:
+
+      # dataframe location, NOT index
+      `masks[detection_location, y, x] == True`
+  
+  `detections` and `masks` must have the same length, as each item of mask is a
+  height x width segmentation mask for that detection.
+
+  Note that masks indices, should match detection locations.
+
+  `ground_truths`, `detections` must be dataframes with columns
+  [`frame`, `x`, `y`] and [`frame`, `mask`] respecitvely.
+  
+  Their indices must be unique.
+
+  The `mask` column must point to the index of the mask for that detection,
+  usually this is incremental from 0.
+  """
+  # iterate through grount truth and detected cells per time frame
+  for frame, frame_ground_truths in ground_truth.groupby('frame'):
+    frame_detections = detections[detections['frame'] == frame]
+    frame_masks = masks[frame_detections['mask'].values]
+
+    # figure out detection mask coinciding with ground truth coordinates.
+    mask_to_index = np.argmax(frame_masks, axis=0)
+    mask_to_index[~frame_masks.max(axis=0)] = -1
+    x, y = np.round(frame_ground_truths[['x', 'y']].values).astype(int).T
+    indices = mask_to_index[y, x]
+    yield from zip(
+        frame_ground_truths.index[indices >= 0],
+        frame_detections.index[indices[indices >= 0]]
+    )
+
+
+def get_segmention_metrics(ground_truth, detections, masks):
+  """For the segmentation task, returns how many true positives and true/false
+  positives as a dictionary including how many ground truths were detected by
+  the same mask (merged).
+  
+  Arguments the same as `match_detections_and_ground_truths`"""
+  matches = match_detections_and_ground_truths(ground_truth, detections, masks)
+  matches_ground_truths, matched_detections = zip(*matches)
+  return {
+    'tp': len(set(matched_detections)),
+    'fp': len(set(detections.index) - set(matched_detections)),
+    'fn': len(set(ground_truth.index) - set(matches_ground_truths)),
+    'merged': len(matched_detections) - len(set(matched_detections)),
+  }
+
+
+def compare_links(a, b, mapping):
+  """
+  `a` and `b` dataframes with columns `frame` and `cell`.
+
+  For every pair of rows in `a`, where the second is one
+  frame ahead of the first, and where both have the same `cell` value, count as:
+
+  over matching: if the first occurs in several such pairs (except for the first found),
+  unmapped: if both can't be mapped as per indices to rows in b,
+  unmatched: if the matched rows in `b` have different `cell` values,
+  true: if the matched rows in `b` have the `cell` values,
+  false counts all pairs that didn't fall into true, e.g. this sums overmatching,
+  unmapped and unmatched."""
+  true, over_matching, unmapped, unmatched = 0, 0, 0, 0
+  for cell, rows in a.groupby('cell'):
+    for index0, frame0 in rows['frame'].iteritems():
+      matched = rows.index[(rows['frame'] - frame0) == 1]
+      # should be 1 match, others are assumed falses.
+      over_matching += len(matched[1:])
+      for index1 in matched[:1]: # loops once or not at all
+        if index0 not in mapping or index1 not in mapping:
+          unmapped += 1
+        elif b['cell'][mapping[index0]] == b['cell'][mapping[index1]]:
+          assert mapping[index0] != mapping[index1], (
+              "Uncanny, different ground truths were mapped to the same detection")
+          true += 1
+        else:
+          unmatched += 1
+  return {'true': true, 'false': over_matching+unmapped+unmatched,
+          'over matching': over_matching, 'unmapped': unmapped,
+          'unmatched': unmatched}
+
+
+def get_tracking_metrics(ground_truth, detections, masks):
+  """For the tracking task, returns how many true positives and true/false
+  positives as a dictionary including how many ground truths were detected by
+  the same mask (merged).
+  
+  Arguments the same as `match_detections_and_ground_truths`"""
+  matches = pd.DataFrame(
+      match_detections_and_ground_truths(ground_truth, detections, masks),
+      columns=['ground truth index', 'detection index'])
+  gt_to_det = {gt: rows['detection index'].values[0] for gt, rows in matches.groupby('ground truth index') if len(rows) == 1}
+  det_to_gt = {det: rows['ground truth index'].values[0] for det, rows in matches.groupby('detection index') if len(rows) == 1}
+
+  comparison_gt = compare_links(ground_truth, detections, gt_to_det)
+  comparison_det = compare_links(detections, ground_truth, det_to_gt)
+  assert comparison_det['true'] == comparison_det['true'], (
+      "Uncanny, different links matches going from ground truth to "
+      "detections as vice versa. This shouldn't happen"
+  )
+  assert comparison_gt['over matching'] == 0, (
+      "Ground truth has marked multiple cells in one frame as the same")
+  return {'tp': comparison_gt['true'], 'fp': comparison_det['false'],
+          'fn': comparison_gt['false'],
+          # when a cell was tracked multiple times in a frame.
+          'over matching': comparison_det['over matching'],
+          # also specify propagated segmentation errors
+          'segmentation fn': comparison_gt['unmapped'],
+          'segmentation fp': comparison_det['unmapped']}
