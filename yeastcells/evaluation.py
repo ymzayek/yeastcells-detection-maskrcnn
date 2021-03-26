@@ -180,12 +180,12 @@ def match_detections_and_ground_truths(ground_truths, detections, masks):
   usually this is incremental from 0.
   """
   # iterate through grount truth and detected cells per time frame
-  for frame, frame_ground_truths in ground_truth.groupby('frame'):
+  for frame, frame_ground_truths in ground_truths.groupby('frame'):
     frame_detections = detections[detections['frame'] == frame]
     frame_masks = masks[frame_detections['mask'].values]
 
     # figure out detection mask coinciding with ground truth coordinates.
-    mask_to_index = np.argmax(frame_masks, axis=0)
+    mask_to_index = np.argmax(frame_masks, axis=0) # speed bottleneck, not sure how to speed up
     mask_to_index[~frame_masks.max(axis=0)] = -1
     x, y = np.round(frame_ground_truths[['x', 'y']].values).astype(int).T
     indices = mask_to_index[y, x]
