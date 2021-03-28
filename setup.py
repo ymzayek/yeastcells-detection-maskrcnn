@@ -32,7 +32,7 @@ setup(
         'imgaug>=0.4.0',
         'pandas>=1.1.4',
       ],
-      zip_safe=False,
+      zip_safe=True,
 )
 
       
