@@ -157,7 +157,7 @@ def calculate_metrics(results, *args):
     }
 
 
-def match_detections_and_ground_truths(ground_truths, detections, masks):
+def match_detections_and_ground_truths(ground_truth, detections, masks):
   """Considering ground truth coordinates versus segmentation masks,
   yields tuples (ground_truth_index, detection_index) for every
   ground truth sample and detection in the same frame, such that the
