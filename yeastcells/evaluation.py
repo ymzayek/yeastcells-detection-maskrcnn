@@ -179,20 +179,20 @@ def match_detections_and_ground_truths(ground_truths, detections, masks):
   The `mask` column must point to the index of the mask for that detection,
   usually this is incremental from 0.
   """
+  matches = []
   # iterate through grount truth and detected cells per time frame
-  for frame, frame_ground_truths in ground_truths.groupby('frame'):
+  for frame, frame_ground_truths in ground_truth.groupby('frame'):
     frame_detections = detections[detections['frame'] == frame]
     frame_masks = masks[frame_detections['mask'].values]
-
-    # figure out detection mask coinciding with ground truth coordinates.
-    mask_to_index = np.argmax(frame_masks, axis=0) # speed bottleneck, not sure how to speed up
-    mask_to_index[~frame_masks.max(axis=0)] = -1
     x, y = np.round(frame_ground_truths[['x', 'y']].values).astype(int).T
-    indices = mask_to_index[y, x]
-    yield from zip(
-        frame_ground_truths.index[indices >= 0],
-        frame_detections.index[indices[indices >= 0]]
-    )
+    mask_values_at_yx = frame_masks[:, y, x]
+    found = mask_values_at_yx.sum(0) > 0
+    detection_indices, ground_truth_indices = np.where(mask_values_at_yx)
+    found = found[ground_truth_indices]
+    matches.extend(zip(
+        frame_ground_truths.index[ground_truth_indices[found]],
+        frame_detections.index[detection_indices[found]]))
+  return pd.DataFrame(matches, columns=['ground truth index', 'detection index'])
 
 
 def get_segmention_metrics(ground_truth, detections, masks):
@@ -202,13 +202,29 @@ def get_segmention_metrics(ground_truth, detections, masks):
   
   Arguments the same as `match_detections_and_ground_truths`"""
   matches = match_detections_and_ground_truths(ground_truth, detections, masks)
-  matches_ground_truths, matched_detections = zip(*matches)
-  return {
-    'tp': len(set(matched_detections)),
-    'fp': len(set(detections.index) - set(matched_detections)),
-    'fn': len(set(ground_truth.index) - set(matches_ground_truths)),
-    'merged': len(matched_detections) - len(set(matched_detections)),
+
+  # We defined true positives to be those ground truths that are picked up as
+  # a detection, but only if this detection has only one ground truths
+  # assinged to it.
+
+  # figuring out which detections have more than one ground truth, they 'join'
+  # ground truths together, and filtering out matches on this detection.
+  detection_joining_gt = matches.groupby('detection index').count() > 1
+  detection_joining_gt = detection_joining_gt.index[detection_joining_gt['ground truth index']]
+  unjoined_matches = matches[~matches['detection index'].isin(detection_joining_gt)]
+  # then the amount of true positives, equals the amount of ground truths that
+  # still have a detection assigned.
+  tp = len(unjoined_matches['ground truth index'].unique())
+
+  # Anything that
+  split = int((unjoined_matches.groupby('ground truth index').count() - 1).sum())
+  metrics = {
+    'tp': tp,
+    'fp': len(set(detections.index) - set(unjoined_matches['detection index'])) + split,
+    'fn': len(set(ground_truth.index) - set(unjoined_matches['ground truth index'])),
+    'join': len(detection_joining_gt), 'split': split,
   }
+  return metrics
 
 
 def compare_links(a, b, mapping):
