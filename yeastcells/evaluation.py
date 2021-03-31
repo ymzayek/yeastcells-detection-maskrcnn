@@ -115,7 +115,7 @@ def get_track_performance_old(pred_t, gt_t, output, pipeline='maskrcnn'):
     split = len(split[c_1>1])
     
     #calculate by # of correct links
-    _matched_links = sum(np.array(list(Counter(labels_matched).values()))-1)
+    n_matched_links = sum(np.array(list(Counter(labels_matched).values()))-1)
     pred_number_of_links = sum(np.array(list(Counter(pred[:,1]).values()))-1)
     gt_number_of_links = sum(np.array(list(Counter(gt[:,1]).values()))-1)
     fn = gt_number_of_links - n_matched_links
