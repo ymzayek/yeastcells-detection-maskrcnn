@@ -376,7 +376,7 @@ def compare_links(a, b, mapping):
 
 def get_tracking_metrics(ground_truth, detections, masks):
   gt, det = ground_truth.copy(), detections.copy()
-  matches = evaluation.match_detections_and_ground_truths(gt, det, masks)
+  matches = match_detections_and_ground_truths(gt, det, masks)
 
   detection_joining_gt = matches.groupby('detection index').count() > 1
   detection_joining_gt = detection_joining_gt.index[detection_joining_gt['ground truth index']]
