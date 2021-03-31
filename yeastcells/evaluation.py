@@ -370,8 +370,9 @@ def compare_links(a, b, mapping):
   to_other.columns = [('other cell', 't'), ('other cell', 't+1')]
   
   unmapped = np.isnan(to_other).max(1).sum()
-  counts = (to_other[('other cell', 't')] == to_other[('other cell', 't+1')]).value_counts()
-  return {'unmapped': unmapped, 'true': counts[True], 'false': counts[False]}
+  true = (to_other[('other cell', 't')] == to_other[('other cell', 't+1')]).sum()
+  false = (to_other[('other cell', 't')] != to_other[('other cell', 't+1')]).sum()
+  return {'unmapped': unmapped, 'true': true, 'false': false}
 
 
 def get_tracking_metrics(ground_truth, detections, masks):
