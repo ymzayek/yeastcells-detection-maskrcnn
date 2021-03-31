@@ -293,7 +293,7 @@ def get_segmention_metrics(ground_truth, detections, masks):
   return metrics
 
 
-def compare_links(a, b, mapping):
+def compare_links_old(a, b, mapping):
   """
   `a` and `b` dataframes with columns `frame` and `cell`.
 
@@ -326,7 +326,7 @@ def compare_links(a, b, mapping):
           'unmatched': unmatched}
 
 
-def get_tracking_metrics(ground_truth, detections, masks):
+def get_tracking_metrics_old(ground_truth, detections, masks):
   """For the tracking task, returns how many true positives and true/false
   positives as a dictionary including how many ground truths were detected by
   the same mask (merged).
@@ -338,8 +338,8 @@ def get_tracking_metrics(ground_truth, detections, masks):
   gt_to_det = {gt: rows['detection index'].values[0] for gt, rows in matches.groupby('ground truth index') if len(rows) == 1}
   det_to_gt = {det: rows['ground truth index'].values[0] for det, rows in matches.groupby('detection index') if len(rows) == 1}
 
-  comparison_gt = compare_links(ground_truth, detections, gt_to_det)
-  comparison_det = compare_links(detections, ground_truth, det_to_gt)
+  comparison_gt = compare_links_old(ground_truth, detections, gt_to_det)
+  comparison_det = compare_links_old(detections, ground_truth, det_to_gt)
   assert comparison_det['true'] == comparison_det['true'], (
       "Uncanny, different links matches going from ground truth to "
       "detections as vice versa. This shouldn't happen"
@@ -350,6 +350,69 @@ def get_tracking_metrics(ground_truth, detections, masks):
           'fn': comparison_gt['false'],
           # when a cell was tracked multiple times in a frame.
           'over matching': comparison_det['over matching'],
+          # also specify propagated segmentation errors
+          'segmentation fn': comparison_gt['unmapped'],
+          'segmentation fp': comparison_det['unmapped']}
+
+
+def compare_links(a, b, mapping):
+  a = a.copy()
+  a['other index'] = [mapping.get(i, -1) for i in a.index]
+  a['previous frame'] = a['frame'] - 1
+  
+  to_other = pd.merge(
+    a, a, how='inner',
+    left_on=['frame','cell'],
+    right_on=['previous frame', 'cell']
+  )[['other index_x', 'other index_y']].applymap(
+      lambda value: (
+        np.nan if value < 0 else int(b.loc[value]['cell'])))
+  to_other.columns = [('other cell', 't'), ('other cell', 't+1')]
+  
+  unmapped = np.isnan(to_other).max(1).sum()
+  counts = (to_other[('other cell', 't')] == to_other[('other cell', 't+1')]).value_counts()
+  return {'unmapped': unmapped, 'true': counts[True], 'false': counts[False]}
+
+
+def get_tracking_metrics(ground_truth, detections, masks):
+  gt, det = ground_truth.copy(), detections.copy()
+  matches = evaluation.match_detections_and_ground_truths(gt, det, masks)
+
+  detection_joining_gt = matches.groupby('detection index').count() > 1
+  detection_joining_gt = detection_joining_gt.index[detection_joining_gt['ground truth index']]
+  unjoined_matches = matches[~matches['detection index'].isin(detection_joining_gt)]
+
+  first_detection_in_frame = (
+      (det.groupby(['frame', 'cell']).cumcount() == 0) |
+      (det['cell'] < 0)
+  )
+  det = det[first_detection_in_frame]
+  overmatching = (~first_detection_in_frame).sum()
+
+  gt_to_det = {
+    gt: rows['detection index'].values[0]
+    for gt, rows in unjoined_matches.groupby('ground truth index')
+    if rows['detection index'].values[0] in det.index
+  }
+
+  assert unjoined_matches.groupby('detection index')['ground truth index'].count().max() <= 1,(
+    "Uncanny, joins should have been removed")
+  det_to_gt = {
+    det_: rows['ground truth index'].values[0]
+    for det_, rows in unjoined_matches.groupby('detection index')
+    if det_ in det.index
+  }
+
+  comparison_gt = compare_links(ground_truth, detections, gt_to_det)
+  comparison_det = compare_links(detections, ground_truth, det_to_gt)
+  assert comparison_det['true'] == comparison_det['true'], (
+      "Uncanny, different links matches going from ground truth to "
+      "detections as vice versa. This shouldn't happen"
+  )
+  return {'tp': comparison_gt['true'], 'fp': comparison_det['false'],
+          'fn': comparison_gt['false'],
+          # when a cell was tracked multiple times in a frame.
+          'over matching': overmatching,
           # also specify propagated segmentation errors
           'segmentation fn': comparison_gt['unmapped'],
           'segmentation fp': comparison_det['unmapped']}
