@@ -62,7 +62,7 @@ def install_detectron2():
           f"Automatic installation of detectron2 was not tested for torch "
           f"version {torch_version} and CUDA version {cuda_version}")
 
-    # pip_install('-U', 'pyyaml') # solved in other setup.py with install_requires
+    pip_install('-U', 'pyyaml>=5.1')
     pip_install('detectron2', '-f',
                 f"https://dl.fbaipublicfiles.com/detectron2/wheels/"
                 f"cu{cuda_version}/torch{torch_version}/index.html")
