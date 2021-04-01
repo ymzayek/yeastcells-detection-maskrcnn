@@ -31,8 +31,20 @@ setup(
         'tqdm>=4.51.0',
         'imgaug>=0.4.0',
         'pandas>=1.1.4',
+        "torch",
+        "torchvision",
       ],
       zip_safe=True,
 )
 
-      
+
+try:
+   __import__('yeastcells.setup').setup_colab()      
+except Exception as error:
+   import warnings
+   warnings.warn(
+         "Tried to install detectron2, but it failed. This was only tested on Google Colab."
+         "Ensure proper installation as per these instructions:\n
+         "https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md"
+    )
+    raise
