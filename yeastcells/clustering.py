@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from tqdm.auto import tqdm
 import numpy as np
+import pandas as pd = 
 from scipy.sparse import coo_matrix
 from sklearn.cluster import DBSCAN
 import random
@@ -83,7 +84,7 @@ def get_distances(outputs, dmax=5, progress=False):
 
     return (coo_matrix((values, (rows, cols)), shape=(offsets[-1], offsets[-1])))
 
-def cluster_cells(output, dmax=5, min_samples=3, eps=0.6, progress=False): 
+def cluster_cells(segmentation, dmax=5, min_samples=3, eps=0.6, progress=False): 
     '''
     Configure and run DBSCAN clustering algorithm to find cell tracks.
     Parameters
@@ -107,18 +108,18 @@ def cluster_cells(output, dmax=5, min_samples=3, eps=0.6, progress=False):
         Coordinates of centroid of individual instances with 2 dimensions
         (labels, ([time, Y, X])).
     '''
-    distances = get_distances(output, dmax=dmax, progress=progress)
+    distances = get_distances(segmentation, dmax=dmax, progress=progress)
     tqdm_ = tqdm if progress else (lambda x: x)
     clusters = DBSCAN(eps=eps, min_samples=min_samples, metric='precomputed')
     clusters.fit(distances)     
 
-    coordinates = np.array([
+    frame, y, x = np.array([
         (t, ) + tuple(map(np.mean, np.where(mask)))
-        for t, o in enumerate(tqdm_(output))
+        for t, o in enumerate(tqdm_(segmentation))
         for mask in o['instances'].pred_masks.to('cpu')
-    ])
+    ]).T
     
-    return clusters.labels_, coordinates
+    return pd.DataFrame({'frame': frame, 'cell': clusters.labels_, 'x': x, 'y': y})
 
 def cluster_cells_grid(output, param_grid, dmax=5, progress=False):
     '''
