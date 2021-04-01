@@ -39,7 +39,8 @@ setup(
 
 
 try:
-   __import__('yeastcells.setup').setup_colab()      
+   from yeastcells import setup
+   setup.setup_colab()
 except Exception as error:
    import warnings
    warnings.warn(
