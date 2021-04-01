@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
+# Unsure why, but if not updated, the old version seems lost and cause errors on Colab
+import yeastcells.setup
+yeastcells.setup.pip_install('-U', 'pyyaml>=5.1')
+
 setup(
       name='yeastcells',
       version=__import__('yeastcells').__version__,
@@ -41,8 +45,8 @@ setup(
 
 
 try:
-   from yeastcells import setup
-   setup.setup_colab()
+   import yeastcells.setup
+   yeastcells.setup.setup_colab()
 except Exception as error:
    import warnings
    warnings.warn(
