@@ -43,8 +43,8 @@ try:
 except Exception as error:
    import warnings
    warnings.warn(
-         "Tried to install detectron2, but it failed. This was only tested on Google Colab. "
-         "Ensure proper installation of detectron2 as per these instructions:\n"
-         "https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md"
-    )
-    raise
+     "Tried to install detectron2, but it failed. This was only tested on Google Colab. "
+     "Ensure proper installation of detectron2 as per these instructions:\n"
+     "https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md"
+   )
+   raise
