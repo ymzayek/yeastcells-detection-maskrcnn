@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from tqdm.auto import tqdm
 import numpy as np
-import pandas as pd = 
+import pandas as pd
 from scipy.sparse import coo_matrix
 from sklearn.cluster import DBSCAN
 import random
