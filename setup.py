@@ -22,7 +22,7 @@ setup(
       packages=['yeastcells'],
       install_requires=[
         "pyyaml>=5.4.1",
-        "downloads",
+        "download",
         'scikit-image>=0.17.2',
         'scikit-learn>=0.23.2,<0.24', # some threadpoolctl issues at 0.24
         'opencv-python>=4.4.0.46',
