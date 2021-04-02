@@ -4,21 +4,17 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 from shapely.geometry import Polygon
 import cv2
-from .features import group 
+from .features import get_contours
 
-def plot_paths(
-        labels, coordinates, xlim=(0, 512), ylim=(0, 512), 
-        ax=None, style={}, subset=None, title=None
-    ):
+
+def plot_paths(detections, xlim=(0, 512), ylim=(0, 512),
+               ax=None, style={}, title=None, fig_kws={}):
     '''
     Plots the paths of labelled ('tracked') cells in a 3D figure.
     Parameters
     ----------
-    labels : ndarray
-        Tracking labels of individual segmented cells.
-    coordinates : ndarray
-        Coordinates of centroid of individual instances with 2 dimensions
-        (labels, ([time, Y, X])).
+    detections : ndarray
+        Tracking results of individual segmented cells, including columns frame, cell, x and y
     xlim : tuple, optional
         X-axis scale. The default is (0, 512).
     ylim : tuple, optional
@@ -26,10 +22,8 @@ def plot_paths(
     ax : Matplotlib axis object, optional
         Sets axes instance. The default is None.
     style : dict, optional
-        Keyword arguments to pass to matplotlib.axes.Axes.plot. 
+        Keyword arguments to pass to matplotlib.axes.Axes.plot.
         The default is {}.
-    subset : list, optional
-        List of a subset of labels to plot. The default is None.
     title : str, optional
         Title for plot. The default is None.
     Returns
@@ -38,127 +32,97 @@ def plot_paths(
         Plots axis into figure.
     '''
     if ax is None:
-        fig = plt.figure()
+        fig = plt.figure(**fig_kws)
         fig.suptitle(title)
         ax = fig.add_subplot(111, projection='3d', proj_type = 'ortho')
-    sub = (
-        (coordinates[:, 0] >= xlim[0]) & (coordinates[:, 0] <= xlim[1]) &
-        (coordinates[:, 1] >= ylim[0]) & (coordinates[:, 1] <= ylim[1]) &
-        (labels >= 0 if -1 in labels else labels > 0) 
-    )
-    coordinates__ = coordinates[sub]
-    clusters__ = labels[sub]
-  
-    for label in range(clusters__.max()+1):
-        if subset is None or label in subset:
-            coords = coordinates__[clusters__ == label]
-            ax.plot(*coords.T, **style)
-    ax.set_xlim(*xlim)
-    ax.set_ylim(*ylim)
-  
+    tracked_cells = set(detections[
+        (detections['x'] >= xlim[0]) & (detections['x'] <= xlim[1]) &
+        (detections['y'] >= ylim[0]) & (detections['y'] <= ylim[1]) &
+        (detections['cell'] >= 0)
+    ]['cell'].unique())
+
+    ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('frame')
+    for cell, track in detections.groupby('cell'):
+        if cell in tracked_cells:
+            ax.plot(*track[['x', 'y', 'frame']].values.T, **style)
+    ax.set_xlim(*xlim); ax.set_ylim(*ylim)
     return ax
 
-def create_scene(
-        frames, output, labels, contours, subset=None, thickness=1, 
-        color=None, framenum=False, labelnum=False
-    ):
+
+def create_scene(frames, detections, masks, cell_style={},
+                 frame_style=None, label_style=None):
     '''
-    Sets up 4D data array of formatted time-series images to be passed to the 
+    Sets up 4D data array of formatted time-series images to be passed to the
     function visualize.show_animation to make an animation.
     Parameters
     ----------
     frames : ndarray
         4D array with int type representing time-series images.
-    output : dict
-        Predictor output from the detecron2 model.
-    labels : ndarray
-        Tracking labels of individual segmented cells.
-    contours : list
-        Zipped list of cell boundary points. 
-        Contours[0] gives the x coordinates and 
-        contours[1] gives the y coordinates.
-    subset : list, optional
-        List of a subset of labels to plot. The default is None.
-    thickness : int, optional
-        Thickness of cell boundary line that is drawn on the image. 
-        The default is 1.
-    color : tuple, optional
-        Set BGR for color of cell boundary lines. The default is None. 
-        If default is chosen, different and random colors are 
-        assigned to each cell.
-    framenum : bool, optional
-        If True, the frame number will be displayed in the 
-        upper left hand corner. The default is False.
-    labelnum : bool, optional
-        If True, the label number of each segmented cell will 
-        be displayed in addition to the colored boundary line. 
-        The default is False.
+    masks : dict
+        array with boolean segemntation masks
+    detections : ndarray
+        Tracking results of individual segmented cells, including columns frame, cell, x and y
+    cell_style : dict, optional
+        Style options passed to cv2.polylines to draw a cell.
+    frame_style, label_style : bool or dict
+        Adds a frame number in each frame, respectively a label to each cell if
+        True or a dictionary with style options for cv2.putText.
     Returns
     -------
     canvas : ndarray
         4D array with int type representing time-series images.
     '''
     canvas = frames.copy()
-  
-    colors = plt.get_cmap('hsv')(np.linspace(0, 1, labels.max()+1))
+    contours = get_contours(masks)
+    colors = (
+            255 * plt.get_cmap('hsv')(
+        np.linspace(0, 1, len(detections['cell'].unique())))[:, :3]).astype(int)
     np.random.shuffle(colors)
-  
-    labels = group(labels, output)
-    x, y = contours
-  
-    for frame_num, (frame, x_, y_, label) in enumerate(
-            zip(canvas, x, y, labels)
-    ):
-        if framenum:
+
+    if 'mask' not in detections.columns:
+        assert len(detections) == len(contours), (
+            "When filtering out tracks, ensure to add a mask column with the "
+            "cumulative mask index in segmentation, such that visualisation  "
+            "can figure out which mask belongs to which detection, e.g.:\n"
+            "    tracking['mask'] = np.arange(len(tracking))\n"
+            "before filtering.")
+        detections = detections.copy()
+        detections['mask'] = np.arange(len(contours))
+
+    for frame_num, track in detections.groupby('frame'):
+        frame = canvas[int(frame_num)]
+        if frame_style is not None and frame_style != False:
             style = {
                 'color': [255, 0, 0], 'fontScale': 2,
-                'fontFace': cv2.FONT_HERSHEY_TRIPLEX,
-                'thickness':2
-            }
-            if type(framenum) == dict:
-                style.update(framenum)
-            cv2.putText(
-                frame, f'{frame_num}',
-                org=(5*style['fontScale'], 30*style['fontScale']),**style
-            )
-    
-        for x__, y__, label_ in zip(x_, y_, label):
-            poly = np.concatenate([[
-                x__[:, None],
-                y__[:, None]
-            ]], axis=1).astype(np.int32).T
-      
-            if len(poly[0])==0:
-                continue
-            if subset is None or label_ in subset:
-                frame[:] = cv2.polylines(
-                    frame.astype(np.uint8),
-                    poly,
-                    isClosed=True,
-                    color = 255*colors[label_, :3] if color is None else color,
-                    thickness=thickness
-                )
-                style = {
-                    'color': [255, 0, 0], 'fontScale': 1,
-                    'fontFace': cv2.FONT_HERSHEY_PLAIN,
-                    'thickness':1
-                }
-                if labelnum is True:
-                    poly_ = Polygon(poly[0]) if len(poly[0]) >= 3 else (
-                        x__.mean(), y__.mean()
-                    )
-                    poly_x,poly_y = zip(*(poly_.centroid.coords)) if len(
-                        poly[0]) >= 3 else poly_
-                    if type(poly_x) is tuple:
-                        poly_x,poly_y = poly_x[0],poly_y[0]
-                    frame[:] = cv2.putText(
-                        frame, f'{label_}', org=(int(poly_x), 
-                        int(poly_y)), **style
-                    )
+                'fontFace': cv2.FONT_HERSHEY_TRIPLEX, 'thickness': 2}
+            if isinstance(frame_style, dict):
+                style.update(frame_style)
+            cv2.putText(frame, f'{int(frame_num)}',
+                        org=(5 * style['fontScale'], 30 * style['fontScale']), **style)
 
+        for contour, label in track[['mask', 'cell']].values:
+            # draw contour:
+            contour = contours[contour]
+            if len(contour) == 0:
+                continue
+            style = {'thickness': 1, 'color': tuple(map(int, colors[label]))}
+            style.update(cell_style)
+            frame[:] = cv2.polylines(
+                frame.astype(np.uint8), contour[None], isClosed=True, **style)
+
+            if label_style is not None and label_style != False:
+                style = {'color': [255, 0, 0], 'fontScale': 1, 'thickness': 1,
+                         'fontFace': cv2.FONT_HERSHEY_PLAIN}
+                if len(contour) >= 3:
+                    x, y = Polygon(contour).centroid.coords.xy
+                    x, y = int(np.round(x[0])), int(np.round(y[0]))
+                else:
+                    x, y = contour.mean(0).round().astype(int)
+                frame[:] = cv2.putText(frame, f'{label:X}' if label > 0 else 'x', org=(x, y), **style)
     return canvas
 
-def select_cell(scene, coordinates, labels, w=40, l=0):
+
+def select_cell(scene, detections, label, w=40):
     '''
     Sets up 4D data array of formatted time-series images to be passed to the 
     function visualize.show_animation to make an animation. 
@@ -169,29 +133,24 @@ def select_cell(scene, coordinates, labels, w=40, l=0):
     ----------
     scene : ndarray
         4D array with int type representing time-series images.
-    coordinates : ndarray
-        Coordinates of centroid of individual instances with 2 dimensions
-        (labels, ([time, Y, X])).
-    labels : ndarray
-        Tracking labels of individual segmented cells.
+    detections: dataframe
+        dataframe containing columns frame, cell, x and y
+    label : int
+        The label of the cell that you want to center and zoom on.
+        The default is 0.
     w : int, optional
         Determines the zoom magnitude based on the cell in focus. 
         The default is 40.
-    l : int, optional
-        The label of the cell that you want to center and zoom on. 
-        The default is 0.
     Returns
     -------
     ndarray
         4D array with int type representing time-series images.
     '''
-    label = l
-    z, y, x = coordinates[labels == label].T 
-    xmin, xmax = int(max(0, x.mean() - w)), int(x.mean() + w)
-    ymin, ymax = int(max(0, y.mean() - w)), int(y.mean() + w)
-    sub = (slice(ymin, ymax), slice(xmin, xmax)) 
+    detections = detections[detections['cell'] == label]
+    xmin, ymin, fmin = (detections[['x', 'y', 'frame']].values.min(0) - [w, w, 0]).clip(0).round().astype(int)
+    xmax, ymax, fmax = (detections[['x', 'y', 'frame']].values.max(0) + [w, w, 0]).round().astype(int)
+    return scene[fmin:fmax, ymin:ymax, xmin:xmax]
 
-    return scene[:,sub[0],sub[1]]
 
 def show_animation(scene, title=None, delay = 500):
     '''
@@ -224,88 +183,3 @@ def show_animation(scene, title=None, delay = 500):
     )
     
     return movie
-
-def plot_area_profiles(mask_areas, time_min, labels, label_list=[0], ax=None, title=None):
-    '''
-    Useful to visualize area profile of individual or multiple cells over time. 
-    If multiple cells, e.g. choose a mother/daughter pair to plot.
-    Parameters
-    ----------
-    mask_area : ndarray
-        Array containing mask area data with float type.
-    time_min : ndarray
-        Array with time offset data with int type.
-    labels : ndarray
-        Tracking labels of individual segmented cells.        
-    label_list : list, optional
-        List of labels for which you want to plot the area over time. 
-        The default is [0].
-    ax : Matplotlib axis object, optional
-        Sets axes instance. The default is None.
-    title : str, optional
-        Set figure title. The default is None.
-    Returns
-    -------
-    ax : Matplotlib axis object
-        Plots axis into figure.
-    '''
-    if ax is None:
-        fig = plt.figure()  
-        fig.suptitle(title)
-    for label in label_list:
-        idx = np.where(labels == label)[0]
-        areas = mask_areas[idx]
-        time_min= time_min[idx]
-        ax = fig.add_subplot(111)
-        ax.set_xlabel('Time (min)')
-        ax.set_ylabel('Area')
-        ax.scatter(time_min, areas, s=2)
-        ax.legend(label_list, loc="upper left")
-        
-    return ax 
-
-def plot_mask_overlay(
-        masks, labels, output, frames, 
-        label_list=[0], frame=0, ax=None, title=None
-    ):
-    '''
-    Display the masks of the segmented cells over the image of the cells. 
-    Useful to visually assess segmentation accuracy.
-    Parameters
-    ----------
-    masks : ndarray 
-        3D binary mask array of segmented cells containing data with int type.
-    labels : ndarray
-        Tracking labels of individual segmented cells. 
-    output : dict
-        Predictor output from the detecron2 model.
-    frames : ndarray
-        4D array of the time-series images
-        (frames, length, width, channels).
-    label_list : list, optional
-        List of labels for which you want to plot the area over time. 
-        The default is [0].
-    frame : int, optional
-        Select the frame that you would like to plot. The default is 0.
-    ax : Matplotlib axis object, optional
-        Sets axes instance. The default is None.
-    title : str, optional
-        Set figure title. The default is None.
-    Returns
-    -------
-    ax : Matplotlib axis object
-        Plots axis into figure.
-    '''
-    if ax is None:
-        fig = plt.figure()
-        fig.suptitle(title)
-        ax = fig.add_subplot(111)
-        ax = plt.imshow(frames[frame])
-    labels_ = group(labels, output)
-    for label in label_list:
-        mask = [masks[i] for i in np.where(labels==label)[0]]
-        if label in labels_[frame]: #for verifying correct label is chosen
-            mask = mask[frame]    
-        ax = plt.imshow(mask, alpha=0.1)
-        
-    return ax      

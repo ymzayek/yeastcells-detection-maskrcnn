@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from . import data
 import numpy as np
 import pandas as pd

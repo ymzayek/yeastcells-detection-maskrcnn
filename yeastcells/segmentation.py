@@ -4,8 +4,10 @@ setup_logger()
 from detectron2 import model_zoo
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
+import pandas as pd
+import numpy as np
 
-def load_model(model_filename, seg_thresh=0.94, device='cpu'):
+def get_model(model_filename, seg_thresh=0.94, device='cpu'):
     '''
     Load and configure the Mask-RCNN model.
     Parameters
@@ -37,5 +39,22 @@ def load_model(model_filename, seg_thresh=0.94, device='cpu'):
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
     cfg.MODEL.DEVICE=device
     predictor = DefaultPredictor(cfg)
-    
     return predictor
+
+
+def get_segmentation(image, model_filename, seg_thresh=0.94, device='cpu'):
+    """Segments the image based on a model get_model(model_filename, seg_thresh, device)
+    and returns a dataframe with columns frame, x and y to mask the detection centroids,
+    a column mask with the indices of the associated mask in masks, and the estimated
+    probability segmentation_score for this detection"""
+    predictor = get_model(model_filename, seg_thresh=seg_thresh, device=device)
+    predictions = [predictor(frame)['instances'].to('cpu') for frame in image]
+    frame= np.array([t for t, o in enumerate(predictions) for _ in range(len(o))])
+    scores = np.array([score for o in predictions for score in o.scores])
+    masks = np.concatenate([o.pred_masks for o in predictions], axis=0)
+    y, x = zip(*(tuple(map(np.mean, np.where(mask))) for mask in masks))
+
+    return pd.DataFrame({
+        'frame': frame, 'x': x, 'y': y,
+        'mask': np.arange(len(x)), 'segmentation_score': scores,
+    }), masks

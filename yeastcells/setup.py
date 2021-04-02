@@ -28,10 +28,10 @@ def check_torch():
     import torch, torchvision
   except ImportError as error:
     raise ModuleNotFoundError(
-      f"Could not import {error.name}, please make sure toch and torchvision"
+      f"Could not import {error.name}, please make sure toch and torchvision "
       "are installed, match the intended detectron2 version:\n"
       "https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md\n"
-      "and match the installed cuda version:\n:https://pytorch.org/"
+      "and match the installed cuda version:\nhttps://pytorch.org/"
     )
     
   if not torch.cuda.is_available():
