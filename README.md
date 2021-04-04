@@ -19,15 +19,15 @@
 
 # Get started on Google Colab
 
-We've tried to make our experiments outsider accessible, particularly by setting up the installation for `detectron2` in Google Colab and by downloading all external resources when needed. Please note that in these notebooks the first cells install all dependencies, and hence it is apropriate to restart the runtime after running the first cell and then run the entire notebook, to ensure the right versions of all packages are imported. Particularly the `Train model on synthetic data` requires this. For the other notebooks not restarting will unlikely cause issues.
+We've tried to make our experiments outsider accessible, particularly by setting up the installation for `detectron2` in Google Colab and by downloading all external resources when needed. Please note that in these notebooks the first cells install all dependencies, this should work without restarting. However, try restarting via the Colab Runtime menu on errors, since inappropriate versions might have been imported into the runtime before the appropriate ones were installed. Particularly the `Train model on synthetic data` might require this. For the other notebooks not restarting will unlikely cause issues.
 
- * [![Example cell detection](https://colab.research.google.com/assets/colab-badge.svg) Example cell detection](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/example_pipeline.ipynb)
- * [![Evaluate performance](https://colab.research.google.com/assets/colab-badge.svg) Evaluate segmentation and performance and hyperparameter tuning](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/evaluation_and_calibration.ipynb)
+ * [![Example cell detection](https://colab.research.google.com/assets/colab-badge.svg) Example cell detection (several minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/example_pipeline.ipynb)
+ * [![Evaluate performance](https://colab.research.google.com/assets/colab-badge.svg) Evaluate segmentation and performance and hyperparameter tuning (~ 30 minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/evaluation_and_calibration.ipynb)
 
 These two notebooks allow you to create synthetic data and train a model. For a proof of concept, respectively set the `sets` and `max_iter` parameters to the lower values suggested. If you want to run them for a realistic use-case, please know these scripts take several hours to complete, and Google Colab is not intended for this. The results are large (~0.5 - 2GB) and on Colab you might easily fail to safe guard them when Google Colab shuts down the machine due to inactivity.
 
- * [![Create synthetic data set](https://colab.research.google.com/assets/colab-badge.svg) Create synthetic data set](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/create_synthetic_dataset_for_training.ipynb)
- * [![Train model on synthetic data](https://colab.research.google.com/assets/colab-badge.svg) Train model on synthetic data](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/train_mask_rcnn_network.ipynb)
+ * [![Create synthetic data set](https://colab.research.google.com/assets/colab-badge.svg) Create synthetic data set  (8 hours)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/create_synthetic_dataset_for_training.ipynb)
+ * [![Train model on synthetic data](https://colab.research.google.com/assets/colab-badge.svg) Train model on synthetic data (8 hours)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/train_mask_rcnn_network.ipynb)
 
 
 # Implementation
