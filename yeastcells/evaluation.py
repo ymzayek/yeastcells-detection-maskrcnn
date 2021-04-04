@@ -403,12 +403,15 @@ def get_tracking_metrics(ground_truth, detections, masks):
   comparison_det = compare_links(det, ground_truth, det_to_gt)
   assert comparison_det['true'] == comparison_det['true'], (
       "Uncanny, different links matches going from ground truth to "
-      "detections as vice versa. This shouldn't happen"
-  )
+      "detections as vice versa. This shouldn't happen")
+  assert comparison_det['untracked'] == 0 (
+      "Uncanny, ground truth should not have untracked (cell == -1) cell labels")
   return {'tp': comparison_gt['true'], 'fp': comparison_det['false'],
           'fn': comparison_gt['false'],
           # when a cell was tracked multiple times in a frame.
           'over matching': overmatching,
+          # ground truth links matched in segmentation but note tracked.
+          'tracking fn': comparison_gt['untracked'],
           # also specify propagated segmentation errors
           'segmentation fn': comparison_gt['unmapped'],
           'segmentation fp': comparison_det['unmapped'],
