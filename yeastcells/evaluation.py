@@ -381,12 +381,25 @@ def compare_links(a, b, mapping):
 
 
 def get_tracking_metrics(ground_truth, detections, masks):
-  first_detection_in_frame = (
+  # If multiple detections got the same label in a frame,
+  # either select the one with the highest segmentation score or
+  # the first one.
+  if 'segmentation_score' in detections.columns:
+    sorted_detections = detections.sort_values(
+      ['frame', 'cell', 'segmentation_score'], ascending=False)
+
+    best_detection_in_frame = (
+        (sorted_detections.groupby(['frame', 'cell']).cumcount() == 0) |
+        (sorted_detections['cell'] < 0))
+
+    det = detections.loc[best_detection_in_frame]
+    overmatching = (~best_detection_in_frame).sum()
+  else:
+    first_detection_in_frame = (
       (detections.groupby(['frame', 'cell']).cumcount() == 0) |
-      (detections['cell'] < 0)
-  )
-  det = detections[first_detection_in_frame]
-  overmatching = (~first_detection_in_frame).sum()
+      (detections['cell'] < 0))
+    det = detections.loc[first_detection_in_frame]
+    overmatching = (~first_detection_in_frame).sum()
 
   matches = match_detections_and_ground_truths(ground_truth, det, masks)
   detection_joining_gt = matches.groupby('detection index')['ground truth index'].count() > 1
