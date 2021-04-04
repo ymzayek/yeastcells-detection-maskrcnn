@@ -47,7 +47,8 @@ def get_segmentation(image, model_filename, seg_thresh=0.94, device='cpu'):
     and returns a dataframe with columns frame, x and y to mask the detection centroids,
     a column mask with the indices of the associated mask in masks, and the estimated
     probability segmentation_score for this detection"""
-    predictor = get_model(model_filename, seg_thresh=seg_thresh, device=device)
+    if not isinstance(model_filename, DefaultPredictor):
+        predictor = get_model(model_filename, seg_thresh=seg_thresh, device=device)
     predictions = [predictor(frame)['instances'].to('cpu') for frame in image]
     frame= np.array([t for t, o in enumerate(predictions) for _ in range(len(o))])
     scores = np.array([score for o in predictions for score in o.scores])
