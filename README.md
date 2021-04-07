@@ -32,7 +32,7 @@ These two notebooks allow you to create synthetic data and train a model. For a 
 
 # Implementation
 
- * [![Example cell detection](https://colab.research.google.com/assets/colab-badge.svg) Example cell detection (several minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/example_pipeline.ipynb)
+[![Example cell detection](https://colab.research.google.com/assets/colab-badge.svg) Example cell detection (several minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/example_pipeline.ipynb)
 
 For creating the synthetic data set and training the network see the notebooks [create_synthetic_dataset_for_training](https://github.com/ymzayek/yeastcells-detection-maskrcnn/blob/main/notebooks/create_synthetic_dataset_for_training.ipynb) and [train_mask_rcnn_network](https://github.com/ymzayek/yeastcells-detection-maskrcnn/blob/main/notebooks/train_mask_rcnn_network.ipynb).
 
@@ -134,7 +134,7 @@ Further, if a flourescent channel is available, the pixel intensity of within ea
 
 # Evaluation
 
- * [![Evaluate performance](https://colab.research.google.com/assets/colab-badge.svg) Evaluation and hyperparameter tuning for segmentation and tracking (~ 30-200 minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/evaluation_and_calibration.ipynb)
+[![Evaluate performance](https://colab.research.google.com/assets/colab-badge.svg) Evaluation and hyperparameter tuning for segmentation and tracking (~ 30-200 minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/evaluation_and_calibration.ipynb)
 
 We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](http://yeast-image-toolkit.biosim.eu/) (YIT) (Versari et al., 2017). On this platform, several exisiting pipelines have been evaluated for their segmentation and tracking performance. We tested our pipeline and that of YeaZ (Dietler et al., 2020) on several test sets from this platform. 
 
