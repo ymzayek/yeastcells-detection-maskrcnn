@@ -40,10 +40,10 @@ All the notebooks can be run on Google Colab and automatically install and downl
 
 <sub>(To run the Mask-RCNN locally, you will need to install the [Detecron2 library](https://detectron2.readthedocs.io/en/latest/tutorials/install.html). For a guide to a Window's installation see these [instructions](https://ivanpp.cc/detectron2-walkthrough-windows/). You also need to download the trained model file from https://datascience.web.rug.nl/models/yeast-cells/mask-rcnn/v1/model_final.pth)</sub>
 
-**Segmentation** 
-* **Input** Brightfield time-lapse images. The source file is either a tiff stack or multiple tiff files forming the time-series. 
+## Segmentation: `get_segmentation`, `get_model`
+* **Input** Brightfield time-lapse images. The source file is either a tiff stack or multiple tiff files forming the time-series.
 
-* **Output** The `output` variable is a dictionary that provides a prediction box, prediction score, and a prediction mask for each instance segmentation in each frame. You can access the prediction masks by `np.array(output[<frame>]['instances'].pred_masks.to('cpu'))`.
+* **Output** A dataframe with one row for each detection and `# detections` $\times$ `height` $\times$ `width` `numpy.ndarray` with the boolean segmentation masks, the masks and the dataframe have the same length and the `mask` column refers to the first dimension of the masks array. The dataframe also has columns `frame`, `x` and `y` to mark the frame of the source image and the centroid of the detection.
 
 <table>
   <tr>	
@@ -58,9 +58,10 @@ All the notebooks can be run on Google Colab and automatically install and downl
 
 <br>
 
-**Tracking**  
-* **Input** The tracking results are obtained using DBSCAN to cluster the detections into labels representing the same cell over time. You can set a maximum frame distance of `<dmax>` for the algorithm to use to calculate the distances between detections in the current `frame` and both `frame-dmax`, `frame+dmax`. In other words, this will calculate distances between all instances in a current frame and all the instances in the following and previous frames up to `dmax`. A higher `dmax` could control for intermittent false negatives because if a cell is missed in an andjacent frame but picked up again 2 frames ahead, the cell will be tracked. However, this also increases the probability of misclassification due to cell growth and movement with time if you look ahead too far. The `min_samples` and `eps` variables are required arguments for the DBSCAN algorithm. For further explanation see [sklearn.cluster.DBSCAN](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html).
-* **Output** A list of `labels` and a list of their `coordinates` [time,x,y]. The labels give the same number (starting from 0) to the cells that are the same over time. -1 indicates noise. The numbers given to each track are arbitrary.
+## Tracking: `track_cells`
+* **Input** Besides the dataframe and masks from segmentation, tracking needs hyperparameters for the DBSCAN clustering and the maximum frame distance when determining the distances between detections. You can set a maximum frame distance of `<dmax>` for the algorithm to use to calculate the distances between detections in the current `frame` and both `frame-dmax`, `frame+dmax`. In other words, this will calculate distances between all instances in a current frame and all the instances in the following and previous frames up to `dmax`. A higher `dmax` could control for intermittent false negatives because if a cell is missed in an andjacent frame but picked up again 2 frames ahead, the cell will be tracked. However, this also increases the probability of misclassification due to cell growth and movement with time if you look ahead too far. The `min_samples` and `eps` variables are required arguments for the DBSCAN algorithm. For further explanation see [sklearn.cluster.DBSCAN](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html).
+
+* **Output** The cell column is added to the dataframe of detections, which is -1 if the tracking algorithm marked it as an outlier and hence didn't track it.
 
 <table>
   <tr>	
