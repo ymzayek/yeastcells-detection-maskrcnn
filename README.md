@@ -156,27 +156,6 @@ The YeaZ segmentation and tracking output was obtained by using the [YeaZ-GUI](h
 
 We matched the centroids provided in the benchmark ground truth data to the mask outputs of our pipeline and YeaZ. This is slightly different than the way it was done on the evaluation platform of YIT but comparable since they matched centroids of the prediction to the centroids of the ground truth using a maximum distance threshold to count a comparison as a true positive (see their [EP](https://github.com/Fafa87/EP) for more detail). We then calculated precision, recall, accuracy, and the F1-score.
 
-For our pipeline, we used calibration curves to set the segmentation threshold score needed by the Mask-RCNN to define the probablity that an instance is a yeast cell.
-
-<br>
-
-<table>
-  <tr>	
-    <td>
-        <img src="figures/eval/calibration_curves/calibration_curves.png"/>
-    </td>
-  </tr>
-    <tr>
-    <td>Figure 6. Calibration curves for each test set showing the 4 different metrics against the segmentation threshold score.</td>
-  </tr>
-</table>
-
-<br>
-
-In the table below, we report the performance metrics for each test set for both YeaZ and our pipeline for comparison.
-
-<br>
-
 <table>
   <tr>	
     <td>
@@ -187,5 +166,82 @@ In the table below, we report the performance metrics for each test set for both
     <td>Table 2. Evaluation results from 7 test sets from the YIT. Precision, recall, accuracy, and the F1-score of the performance of our pipeline and of YeaZ are reported for both segmentation and tracking.</td>
   </tr>
 </table> 
+
+<br>
+
+For our pipeline, we used calibration curves to set the segmentation threshold score needed by the Mask-RCNN to define the probablity that an instance is a yeast cell.
+
+<br>
+
+<table>
+  <tr>	
+    <td>
+        <img src="figures/eval/calibration_curves/ts1_cc_seg.png"/>
+        <p>YIT Test set 1</p>
+    </td>
+    <td>
+        <img src="figures/eval/calibration_curves/ts2_cc_seg.png"/>
+        <p>YIT Test set 2</p>
+    </td>
+  </tr>
+  <tr>	
+    <td>
+        <img src="figures/eval/calibration_curves/ts3_cc_seg.png"/>
+        <p>YIT Test set 3</p>
+    </td>
+    <td>
+        <img src="figures/eval/calibration_curves/ts4_cc_seg.png"/>
+        <p>YIT Test set 4</p>
+    </td>
+  </tr>
+  <tr>	
+    <td>
+        <img src="figures/eval/calibration_curves/ts5_cc_seg.png"/>
+        <p>YIT Test set 5</p>
+    </td>
+    <td>
+        <img src="figures/eval/calibration_curves/ts6_cc_seg.png"/>
+        <p>YIT Test set 6</p>
+    </td>
+  </tr>
+  <tr>	
+    <td>
+        <img src="figures/eval/calibration_curves/ts7_cc_seg.png"/>
+        <p>YIT Test set 7</p>
+    </td>
+    <td>
+    </td>
+  </tr>
+    <tr>
+    <td colspan="2">Figure 6. Calibration curves for each test set showing the 4 different metrics against the segmentation threshold score.</td>
+  </tr>
+</table>
+
+
+<table>
+  <tr>	
+    <td>
+        <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet1.png"/>
+        <p>YIT Test set 1</p>
+    </td>
+    <td>
+        <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet3.png"/>
+        <p>YIT Test set 3</p>
+    </td>
+    <td>
+        <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet5.png"/>
+        <p>YIT Test set 5</p>
+    </td>
+    <td>
+    </td>
+  </tr>
+    <tr>
+    <td colspan="3">Figure 7. Calibration curves for tracking performance and hyperparameter tuning.</td>
+  </tr>
+</table>
+
+<br>
+
+In the table below, we report the performance metrics for each test set for both YeaZ and our pipeline for comparison.
 
 <br>
