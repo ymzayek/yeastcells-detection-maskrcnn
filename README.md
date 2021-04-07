@@ -148,13 +148,18 @@ We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](ht
   </tr>
 </table>  
 
-<br>
+<br/>
 
 We chose to compare our pipeline with YeaZ because they also use a deep learning CNN, unlike the other pipelines evaluated on YIT. 
 
 The YeaZ segmentation and tracking output was obtained by using the [YeaZ-GUI](https://github.com/lpbsscientist/YeaZ-GUI) with the recommended default parameters.
 
 We matched the centroids provided in the benchmark ground truth data to the mask outputs of our pipeline and YeaZ. This is slightly different than the way it was done on the evaluation platform of YIT but comparable since they matched centroids of the prediction to the centroids of the ground truth using a maximum distance threshold to count a comparison as a true positive (see their [EP](https://github.com/Fafa87/EP) for more detail). We then calculated precision, recall, accuracy, and the F1-score.
+
+
+In the table below, we report the performance metrics for each test set for both YeaZ and our pipeline for comparison.
+
+<br/>
 
 <table>
   <tr>	
@@ -169,9 +174,11 @@ We matched the centroids provided in the benchmark ground truth data to the mask
 
 <br>
 
-For our pipeline, we used calibration curves to set the segmentation threshold score needed by the Mask-RCNN to define the probablity that an instance is a yeast cell.
+# Hyperparameters
 
-<br>
+For our pipeline, we used calibration curves to set the segmentation threshold score needed by the Mask-RCNN to define the probablity that an instance is a yeast cell. For tracking, we used them to tune the `epsilon` of DBSCAN and `dmax`, the maximum amount of frames between two detections allowed to adjacently track them as the same cell.
+
+<br/>
 
 <table>
   <tr>	
@@ -217,6 +224,7 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
   </tr>
 </table>
 
+<br/>
 
 <table>
   <tr>	
@@ -240,8 +248,4 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
   </tr>
 </table>
 
-<br>
-
-In the table below, we report the performance metrics for each test set for both YeaZ and our pipeline for comparison.
-
-<br>
+<br/>
