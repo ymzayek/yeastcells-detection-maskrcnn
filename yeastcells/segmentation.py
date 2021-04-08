@@ -7,7 +7,8 @@ from detectron2.config import get_cfg
 import pandas as pd
 import numpy as np
 
-def get_model(model_filename, seg_thresh=0.94, device='cpu'):
+def get_model(model_filename, seg_thresh=0.94, device='cpu',
+              max_detections_per_frame=1000):
     '''
     Load and configure the Mask-RCNN model.
     Parameters
@@ -24,6 +25,12 @@ def get_model(model_filename, seg_thresh=0.94, device='cpu'):
     device : str, optional
         Can be set to a GPU or CPU depending on availability. 
         The default is 'cpu'.
+    max_detections_per_frame: int
+        detectron2 Mask-RCNN hyperparameter to specify the maximum instances that can
+        be detected per frame, more means more but also slower. Set this to some reasonable
+        upper limit of cells you expect to be in one frame, and maybe slightly higher to
+        compensate for false positives. This shouldn't be used for weeding out false positives,
+        please use the segmentation score for that.
     Returns
     -------
     predictor : DefaultPredictor
@@ -38,6 +45,7 @@ def get_model(model_filename, seg_thresh=0.94, device='cpu'):
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = seg_thresh
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 512
     cfg.MODEL.DEVICE=device
+    cfg.TEST.DETECTIONS_PER_IMAGE = max_detections_per_frame
     predictor = DefaultPredictor(cfg)
     return predictor
 
