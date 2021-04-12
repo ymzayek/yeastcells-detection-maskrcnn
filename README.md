@@ -186,40 +186,41 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
 <table>
   <tr>	
     <td>
-        <img src="figures/eval/calibration_curves/ts1_cc_seg.png"/>
+        <img src="figures/eval/calibration_curves/Threshold-calibration-curve-segmentation-TestSet1.png"/>
         <p>YIT Test set 1</p>
     </td>
     <td>
-        <img src="figures/eval/calibration_curves/ts2_cc_seg.png"/>
+        <img src="figures/eval/calibration_curves/Threshold-calibration-curve-segmentation-TestSet2.png"/>
         <p>YIT Test set 2</p>
     </td>
   </tr>
   <tr>	
     <td>
-        <img src="figures/eval/calibration_curves/ts3_cc_seg.png"/>
+        <img src="figures/eval/calibration_curves/Threshold-calibration-curve-segmentation-TestSet3.png"/>
         <p>YIT Test set 3</p>
     </td>
     <td>
-        <img src="figures/eval/calibration_curves/ts4_cc_seg.png"/>
+        <img src="figures/eval/calibration_curves/Threshold-calibration-curve-segmentation-TestSet4.png"/>
         <p>YIT Test set 4</p>
     </td>
   </tr>
   <tr>	
     <td>
-        <img src="figures/eval/calibration_curves/ts5_cc_seg.png"/>
+        <img src="figures/eval/calibration_curves/Threshold-calibration-curve-segmentation-TestSet5.png"/>
         <p>YIT Test set 5</p>
     </td>
     <td>
-        <img src="figures/eval/calibration_curves/ts6_cc_seg.png"/>
+        <img src="figures/eval/calibration_curves/Threshold-calibration-curve-segmentation-TestSet6.png"/>
         <p>YIT Test set 6</p>
     </td>
   </tr>
   <tr>	
     <td>
-        <img src="figures/eval/calibration_curves/ts7_cc_seg.png"/>
+        <img src="figures/eval/calibration_curves/Threshold-calibration-curve-segmentation-TestSet7.png"/>
         <p>YIT Test set 7</p>
     </td>
     <td>
+     <img src="figures/eval/calibration_curves/Threshold-calibration-curve-segmentation-legend.png"/>
     </td>
   </tr>
     <tr>
@@ -242,8 +243,6 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
     <td>
         <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet5.png"/>
         <p>YIT Test set 5</p>
-    </td>
-    <td>
     </td>
   </tr>
     <tr>
