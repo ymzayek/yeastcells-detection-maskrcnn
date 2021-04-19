@@ -22,7 +22,7 @@ def get_contours(masks):
     contours = []
     for mask in masks:
         if not mask.max():  # empty mask
-            contours.append(np.zeros(0, 2))
+            contours.append(np.zeros((0, 2)))
         else:
             contour = cv2.findContours(
                 mask.astype(np.uint8), cv2.RETR_LIST,
