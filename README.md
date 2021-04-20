@@ -70,14 +70,12 @@ All the notebooks can be run on Google Colab and automatically install and downl
     <td>
         <img src="figures/gifs/output_xy01_animation.gif"/>
     </td>
-  </tr>
-    <tr>	
     <td>
-        <img src="figures/gifs/Movie1_frame40_.gif"/>
+        <img src="figures/gifs/20201125_rpl26a_3min_agar_rep1_xy12.nd2.gif"/>
     </td>
   </tr>
     <tr>
-    <td>Figure 2. Segmented and tracked yeast cells from Mask-RCNN. The top movie shows a microfluidic experiment and the botttom movie shows an agarpad experiment. The frame rate of these time-series images is 180 to 300 seconds. </td>
+    <td colspan="2">Figure 2. Segmented and tracked yeast cells from Mask-RCNN. The top movie shows a microfluidic experiment and the botttom movie shows an agarpad experiment. The frame rate of these time-series images is 180 to 300 seconds. </td>
   </tr>
 </table>
 
