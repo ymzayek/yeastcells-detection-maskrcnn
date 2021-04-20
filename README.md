@@ -141,11 +141,44 @@ We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](ht
 <table>
   <tr>	
     <td>
-        <img src="figures/yit/test_sets_seg.png"/>
+     <img src="figures/yit/TestSet1-frame-10.png"/>
+     <p>YIT Test set 1, frame 10</p>
+    </td>
+    <td>
+      <img src="figures/yit/TestSet2-frame-25.png"/>
+      <p>YIT Test set 2, frame 25</p>
+    </td>
+  </tr>
+  <tr>	
+    <td>
+     <img src="figures/yit/TestSet3-frame-10.png"/>
+     <p>YIT Test set 3, frame 19</p>
+    </td>
+    <td>
+      <img src="figures/yit/TestSet4-frame-10.png"/>
+      <p>YIT Test set 4, frame 19</p>
+    </td>
+  </tr>
+  <tr>	
+    <td>
+     <img src="figures/yit/TestSet5-frame-19.png"/>
+     <p>YIT Test set 5, frame 19</p>
+    </td>
+    <td>
+      <img src="figures/yit/TestSet6-frame-9.png"/>
+      <p>YIT Test set 6, frame 9</p>
+    </td>
+  </tr>
+  <tr>	
+    <td>
+     <img src="figures/yit/TestSet7-frame-9.png"/>
+     <p>YIT Test set 7, frame 9</p>
+    </td>
+    <td>
     </td>
   </tr>
     <tr>
-    <td>Figure 5. The 7 test sets we evaluated from YIT. The images show the first frame of time-series data. These test sets cover sparse, intermediate, and large colonies. For each test set, the image on the left shows the original brightfield image and the image on the right shows the same image with the segmentations output by our network highlighted in magenta.</td>
+    <td colspan="2">Figure 5. The 7 test sets we evaluated from YIT. The images show the first frame of time-series data. These test sets cover sparse, intermediate, and large colonies. For each test set, the image on the left shows the original brightfield image and the image on the right shows the same image with the segmentations output by our network highlighted in magenta.</td>
   </tr>
 </table>  
 
