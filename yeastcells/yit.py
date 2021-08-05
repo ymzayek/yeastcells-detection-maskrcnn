@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from skimage.io import imread
 
+
 def get_ground_truth(path, testset_name = 'TestSet1'):
   # we need the load the tracking labels from a differen file as
   # the segmentation coordinates.
