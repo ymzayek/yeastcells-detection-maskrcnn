@@ -122,7 +122,7 @@ def create_scene(frames, detections, masks, cell_style={},
     return canvas
 
 
-def select_cell(scene, detections, label, w=40):
+def select_cell(scene, detections, masks, label, w=40):
     '''
     Sets up 4D data array of formatted time-series images to be passed to the 
     function visualize.show_animation to make an animation. 
@@ -146,10 +146,11 @@ def select_cell(scene, detections, label, w=40):
     ndarray
         4D array with int type representing time-series images.
     '''
+    masks = masks[detections['cell'] == label]
     detections = detections[detections['cell'] == label]
     xmin, ymin, fmin = (detections[['x', 'y', 'frame']].values.min(0) - [w, w, 0]).clip(0).round().astype(int)
     xmax, ymax, fmax = (detections[['x', 'y', 'frame']].values.max(0) + [w, w, 0]).round().astype(int)
-    return scene[fmin:fmax, ymin:ymax, xmin:xmax]
+    return scene[fmin:fmax, ymin:ymax, xmin:xmax], masks[fmin:fmax, ymin:ymax, xmin:xmax]
 
 
 def show_animation(scene, title=None, delay = 500):
