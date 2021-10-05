@@ -51,10 +51,12 @@ def get_pixel_value_sum(image, detections, masks):
     """For each detection, returns the sum of all pixel values of that
     segmentation"""
     im = image[:, None]
+    det = detections.copy()
+    det['mask'] = np.arange(0, len(det)) 
     return np.concatenate([
          # select pixels in the cell:
         (masks[mask['mask']] * im[frame]).sum(1).sum(1) # sum spatial dimensions to summed intensity
-        for frame, mask in detections.groupby('frame')
+        for frame, mask in det.groupby('frame')
     ])
 
 
