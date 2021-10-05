@@ -67,14 +67,11 @@ All the notebooks can be run on Google Colab and automatically install and downl
 <table>
   <tr>	
     <td>
-        <img src="figures/gifs/.gif"/>
-    </td>
-    <td>
-        <img src="figures/gifs/.gif"/>
+        <img src="figures/gifs/animation.gif"/>
     </td>
   </tr>
     <tr>
-    <td colspan="2">Segmented and tracked yeast cells from Mask R-CNN. The left movie shows a microfluidic experiment and the right movie shows an agarpad experiment. The frame rate of these time-series images is 180 to 300 seconds. </td>
+    <td colspan="2">Segmented and tracked yeast cells from Mask R-CNN. The frame rate of these time-series images is 180 seconds. </td>
   </tr>
 </table>
 
@@ -91,24 +88,11 @@ This pipeline allows you to extract information about the detected yeast cells i
 <table>
   <tr>	
     <td>
-        <img src="figures/features/.png"/>
+        <img src="figures/features/mask_overlay.png"/>
     </td>
   </tr>
     <tr>
     <td>A mother/daughter pair of masks are overlayed on the original brightfield image.</td>
-  </tr>
-</table>
-
-<br>
-
-<table>
-  <tr>	
-    <td>
-        <img src="figures/features/.png"/>
-    </td>
-  </tr>
-    <tr>
-    <td>Comparison of area profiles between mother (blue) and daughter (orange) cells.</td>
   </tr>
 </table>
 
@@ -119,7 +103,7 @@ Further, if a flourescent channel is available, the pixel intensity of within ea
 <table>
   <tr>	
     <td>
-        <img src="figures/features/.png"/>
+        <img src="figures/features/prediction_df.png"/>
     </td>
   </tr>
     <tr>
@@ -134,52 +118,6 @@ Further, if a flourescent channel is available, the pixel intensity of within ea
 * [![Evaluation](https://colab.research.google.com/assets/colab-badge.svg) Evaluation of our model against YeaZ and YeastNet2](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/compare_models.ipynb)
 
 We evaluated our pipeline using benchmark data from the [Yeast Image Toolkit](http://yeast-image-toolkit.biosim.eu/) (YIT) (Versari et al., 2017). On this platform, several exisiting pipelines have been evaluated for their segmentation and tracking performance. We tested our pipeline and that of YeaZ (Dietler et al., 2020) and YeastNet2 (Salem et al., 2021) on several test sets from this platform. 
-
-<br>
-
-<table>
-  <tr>	
-    <td>
-     <img src="figures/yit/TestSet1-frame-10.png"/>
-     <p>YIT Test set 1, frame 10</p>
-    </td>
-    <td>
-      <img src="figures/yit/TestSet2-frame-25.png"/>
-      <p>YIT Test set 2, frame 25</p>
-    </td>
-  </tr>
-  <tr>	
-    <td>
-     <img src="figures/yit/TestSet3-frame-10.png"/>
-     <p>YIT Test set 3, frame 19</p>
-    </td>
-    <td>
-      <img src="figures/yit/TestSet4-frame-10.png"/>
-      <p>YIT Test set 4, frame 19</p>
-    </td>
-  </tr>
-  <tr>	
-    <td>
-     <img src="figures/yit/TestSet5-frame-19.png"/>
-     <p>YIT Test set 5, frame 19</p>
-    </td>
-    <td>
-      <img src="figures/yit/TestSet6-frame-9.png"/>
-      <p>YIT Test set 6, frame 9</p>
-    </td>
-  </tr>
-  <tr>	
-    <td>
-     <img src="figures/yit/TestSet7-frame-9.png"/>
-     <p>YIT Test set 7, frame 9</p>
-    </td>
-    <td>
-    </td>
-  </tr>
-    <tr>
-    <td colspan="2">The 7 test sets we evaluated from YIT. The images show the one frame of time-series data. These test sets cover sparse, intermediate, and large colonies. For each test set, the image on the left shows the original brightfield image and the image on the right shows the same image with the segmentations output by our Mask R-CNN network highlighted in magenta.</td>
-  </tr>
-</table>  
 
 <br/>
 
@@ -220,7 +158,7 @@ In the table below, we report the performance metrics for each test set for both
 
 <br>
 
-We further quantitatively evaluated our segmentation performance based on IOU compared to YeaZ using publicly available annotated ground truth data set from the YeaZ group.
+We further quantitatively evaluated our segmentation accuracy based on IOU and compared it to YeaZ using publicly available annotated ground truth data from the YeaZ group.
 
 <table>
   <tr>	
@@ -229,7 +167,7 @@ We further quantitatively evaluated our segmentation performance based on IOU co
     </td>
   </tr>
     <tr>
-    <td>.</td>
+    <td>Average IOU is calculated for true positives using annotated brightfield images of wild-type cells from the YeaZ dataset</td>
   </tr>
 </table> 
 
@@ -285,6 +223,21 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
     <td colspan="2">Calibration curves for each test set showing the 4 different metrics against the segmentation threshold score.</td>
   </tr>
 </table>
+
+<br/>
+
+### Metrics
+
+<table>
+  <tr>	
+    <td>
+        <img src="figures/eval/metrics.png"/>
+    </td>
+  </tr>
+    <tr>
+    <td>TP: true positive detections; FP: false positive detections; and FN: false negatives</td>
+  </tr>
+</table> 
 
 <br/>
 
