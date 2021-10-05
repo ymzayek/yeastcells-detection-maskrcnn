@@ -24,7 +24,6 @@ We've tried to make our experiments outsider accessible, particularly by setting
  * [![Example cell detection](https://colab.research.google.com/assets/colab-badge.svg) Example cell detection (several minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/example_pipeline.ipynb)
 * [![Evaluation](https://colab.research.google.com/assets/colab-badge.svg) Evaluation of our Mask R-CNN model against YeaZ and YeastNet2](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/compare_models.ipynb)
  * [![Mask R-CNN calibration](https://colab.research.google.com/assets/colab-badge.svg) Hyperparameter tuning for Mask R-CNN segmentation and tracking (~ 30-200 minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/Calibration.ipynb)
-* [![YeaZ calibration](https://colab.research.google.com/assets/colab-badge.svg) Hyperparameter tuning for YeaZ segmentation](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/YeaZ_hyperparameter_optimization.ipynb)
 
 The two notebooks below allow you to create synthetic data and train a model. For a proof of concept, respectively set the `sets` and `max_iter` parameters to the lower values suggested. If you want to run them for a realistic use-case, please know these scripts take several hours to complete, and Google Colab is not intended for this. The results are large (~0.5 - 2GB) and on Colab you might easily fail to safe guard them when Google Colab shuts down the machine due to inactivity.
 
@@ -52,7 +51,7 @@ All the notebooks can be run on Google Colab and automatically install and downl
         <img src="figures/segmentations/seg_example.png"/>
     </td>
   </tr>
-    <tr>
+  <tr>
     <td>Example of 512x512 brightfield images and their detections. Detected yeast cells are highlighted by a magenta border. A) and B) show the segmentations in one frame of time-series agarpad experiments, C) shows segmentations in a microfluidic experiment and D) shows a close up of the boundries of detected cells. </td>
   </tr>
 </table>
@@ -70,8 +69,8 @@ All the notebooks can be run on Google Colab and automatically install and downl
         <img src="figures/gifs/animation.gif"/>
     </td>
   </tr>
-    <tr>
-    <td colspan="2">Segmented and tracked yeast cells from Mask R-CNN. The frame rate of these time-series images is 180 seconds. </td>
+  <tr>
+    <td>Segmented and tracked yeast cells from Mask R-CNN. The frame rate of these time-series images is 180 seconds. </td>
   </tr>
 </table>
 
@@ -235,7 +234,9 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
     </td>
   </tr>
     <tr>
-    <td>TP: true positive detections; FP: false positive detections; and FN: false negatives</td>
+    <td>TP: true positive detections <br>
+    FP: false positive detections <br>
+    FN: false negatives</td>
   </tr>
 </table> 
 
@@ -251,6 +252,8 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
         <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet2.png"/>
         <p>YIT Test set 2</p>
     </td>
+  </tr>
+  <tr>
     <td>
         <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet3.png"/>
         <p>YIT Test set 3</p>
@@ -259,6 +262,8 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
         <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet4.png"/>
         <p>YIT Test set 4</p>
     </td>
+  </tr>
+  <tr>
     <td>
         <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet5.png"/>
         <p>YIT Test set 5</p>
@@ -267,13 +272,15 @@ For our pipeline, we used calibration curves to set the segmentation threshold s
         <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet6.png"/>
         <p>YIT Test set 6</p>
     </td>
-        <td>
+  </tr>
+  <tr>
+    <td>
         <img src="figures/eval/calibration_curves/Tracking-calibration-curve-segmentation-TestSet7.png"/>
         <p>YIT Test set 7</p>
     </td>
   </tr>
-    <tr>
-    <td colspan="3">Calibration curves for tracking performance and hyperparameter tuning.</td>
+  <tr>
+    <td colspan="7">Calibration curves for tracking performance and hyperparameter tuning.</td>
   </tr>
 </table>
 
