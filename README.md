@@ -174,6 +174,8 @@ We further quantitatively evaluated our segmentation accuracy based on IOU and c
 
 # Hyperparameters
 
+ * [![Mask R-CNN calibration](https://colab.research.google.com/assets/colab-badge.svg) Hyperparameter tuning for Mask R-CNN segmentation and tracking (~ 30-200 minutes)](https://colab.research.google.com/github/ymzayek/yeastcells-detection-maskrcnn/blob/master/notebooks/Calibration.ipynb)
+
 For our pipeline, we used calibration curves to set the segmentation threshold score needed by the Mask R-CNN to define the probablity that an instance is a yeast cell. For tracking, we used them to tune the `epsilon` of DBSCAN and `dmax`, the maximum amount of frames between two detections allowed to adjacently track them as the same cell.
 
 <br/>
