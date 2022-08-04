@@ -4,9 +4,9 @@
 
 # Participants
 
-* MSc Herbert Teun Kruitbosch, data scientist, University of Groningen, Data science team
-* MSc Yasmin Mzayek, IT trainee, University of Groningen, Data Science trainee
-* MA Sara Omlor, IT trainee, University of Groningen, Data Science trainee
+* MSc Herbert Teun Kruitbosch, data scientist, University of Groningen, [Data science team](https://www.rug.nl/datascience)
+* MSc Yasmin Mzayek, IT trainee, University of Groningen, [Data Science trainee](https://www.rug.nl/datascience)
+* MA Sara Omlor, IT trainee, University of Groningen, [Data Science trainee](https://www.rug.nl/datascience)
 * MSc Paolo Guerra, PhD student, University of Groningen, Faculty of Science and Engineering, [Molecular Systems Biology](https://www.rug.nl/research/molecular-systems-biology)
 * Dr Andreas Milias Argeitis, principal investigator, University of Groningen, Faculty of Science and Engineering, [Molecular Systems Biology](https://www.rug.nl/research/molecular-systems-biology/research-dr.andreas-milias-argeitis?lang=en)
 
