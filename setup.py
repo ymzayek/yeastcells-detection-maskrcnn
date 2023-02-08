@@ -33,7 +33,7 @@ setup(
         'opencv-contrib-python>=4.4.0.46',
         'numpy>=1.19.1',
         'scipy>=1.5.2',
-        'Shapely>=1.7.0'
+        'Shapely>=1.7.0',
         'tqdm>=4.51.0',
         'imgaug>=0.4.0',
         'pandas>=1.1.4',
