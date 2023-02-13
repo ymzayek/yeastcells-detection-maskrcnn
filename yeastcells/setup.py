@@ -35,7 +35,7 @@ def check_torch():
     )
     
   if not torch.cuda.is_available():
-    warning.warn(
+    warnings.warn(
         "Torch could not detect a CUDA device, make sure your machine has "
         "a GPU and that CUDA is installed properly. If you intend to use a "
         "CPU, please realise detectron2 will be significantly slower, and "
@@ -50,7 +50,7 @@ def install_detectron2():
     import detectron2
   except ImportError as error:
     if error.name != 'detectron2':
-        warning.warn(f"It seems detectron2 is improperly installed")
+        warnings.warn(f"It seems detectron2 is improperly installed")
         raise error
     
     import torch
