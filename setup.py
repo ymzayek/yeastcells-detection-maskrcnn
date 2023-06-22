@@ -28,7 +28,7 @@ setup(
 #         "pyyaml>=5.4.1",
         "download",
         'scikit-image>=0.17.2',
-        'scikit-learn>=0.23.2,<0.24', # some threadpoolctl issues at 0.24
+        'scikit-learn>=1.2.2', # some threadpoolctl issues at 0.24
         'opencv-python>=4.4.0.46',
         'opencv-contrib-python>=4.4.0.46',
         'numpy>=1.19.1',
